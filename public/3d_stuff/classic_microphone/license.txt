@@ -1,0 +1,11 @@
+Model Information:
+* title:	Classic Microphone
+* source:	https://sketchfab.com/3d-models/classic-microphone-07c5d34f8abc439d806be0eb5e0175d0
+* author:	urbanmasque (https://sketchfab.com/urbanmasque)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Classic Microphone" (https://sketchfab.com/3d-models/classic-microphone-07c5d34f8abc439d806be0eb5e0175d0) by urbanmasque (https://sketchfab.com/urbanmasque) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

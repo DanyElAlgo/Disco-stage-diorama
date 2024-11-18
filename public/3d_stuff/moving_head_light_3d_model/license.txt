@@ -1,0 +1,8 @@
+Model Information:
+* title:	Moving Head Light, 3D Model
+* source:	https://sketchfab.com/3d-models/moving-head-light-3d-model-acc4a01193d44d9dab14fbe52cf26283
+* author:	super_arte (https://sketchfab.com/super_arte)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
