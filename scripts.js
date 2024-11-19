@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { GLTFLoader } from 'three/examples/jsm/Addons.js';
+import { GLTFLoader, SkeletonUtils } from 'three/examples/jsm/Addons.js';
 import deku from '/img/not_deku.jpg'
 import mine1 from '/img/mine1.jpg';
 import star from '/img/star2.jpg';
 import gato from '/img/no_hace_nada.jpeg';
 import fractal from '/img/fractal.jpg';
+import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
 
 
 
@@ -31,7 +32,7 @@ const boxGeometry = new THREE.BoxGeometry();
 const boxMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
 const box = new THREE.Mesh(boxGeometry, boxMaterial)
 
-scene.add(box);
+// scene.add(box);
 const planeGeometry = new THREE.PlaneGeometry(30,30);
 const planeMat = new THREE.MeshStandardMaterial({color: 0xcccccc, side: THREE.DoubleSide});
 const plane = new THREE.Mesh(planeGeometry, planeMat);
@@ -50,6 +51,7 @@ const sphere = new THREE.Mesh(sphereGeo, sphereMat);
 sphere.position.set(-10,10,0);
 sphere.castShadow = true;
 scene.add(sphere);
+sphere.name = "BALL";
 
 const ambientLight = new THREE.AmbientLight(0x333333);
 scene.add(ambientLight);
@@ -96,40 +98,71 @@ scene.background = cubeTextureLoader.load([
     star
 ]);
 
-const box2Geometry = new THREE.BoxGeometry(4,4,4);
-const box2Mat = new THREE.MeshBasicMaterial({
-    //color: 0x00ff00,
-    //map: textureLoader.load(fractal)
-});
-const box2MulltiMaterial = [
-    new THREE.MeshBasicMaterial({map: textureLoader.load(deku)}),
-    new THREE.MeshBasicMaterial({map: textureLoader.load(star)}),
-    new THREE.MeshBasicMaterial({map: textureLoader.load(mine1)}),
-    new THREE.MeshBasicMaterial({map: textureLoader.load(gato)}),
-    new THREE.MeshBasicMaterial({map: textureLoader.load(fractal)}),
-    new THREE.MeshBasicMaterial({map: textureLoader.load(gato)}),
-];
-const box2 = new THREE.Mesh(box2Geometry, box2MulltiMaterial);
-scene.add(box2);
-box2.position.set(1,18, 10);
-//box2.material.map = textureLoader.load(fractal);
+// const box2Geometry = new THREE.BoxGeometry(4,4,4);
+// const box2Mat = new THREE.MeshBasicMaterial({
+     //color: 0x00ff00,
+     //map: textureLoader.load(fractal)
+// });
+// const box2MulltiMaterial = [
+//     new THREE.MeshBasicMaterial({map: textureLoader.load(deku)}),
+//     new THREE.MeshBasicMaterial({map: textureLoader.load(star)}),
+//     new THREE.MeshBasicMaterial({map: textureLoader.load(mine1)}),
+//     new THREE.MeshBasicMaterial({map: textureLoader.load(gato)}),
+//     new THREE.MeshBasicMaterial({map: textureLoader.load(fractal)}),
+//     new THREE.MeshBasicMaterial({map: textureLoader.load(gato)}),
+// ];
+// const box2 = new THREE.Mesh(box2Geometry, box2MulltiMaterial);
+// scene.add(box2);
+// box2.position.set(1,18, 10);
+// box2.material.map = textureLoader.load(fractal);
 
-
+let microphone = new THREE.Object3D();
 const micLoader = new GLTFLoader().setPath('/3d_stuff/classic_microphone/');
 micLoader.load('scene.gltf', (gltf) => {
-    const mesh = gltf.scene;
-    mesh.position.set(0, 4.3, -1);
-    mesh.scale.set(2.5,2.5,2.5);
-    scene.add(mesh);
+    microphone.add(gltf.scene);
+    //mesh.position.set(0, 4.3, -1);
+    //mesh.scale.set(2.5,2.5,2.5);
+    //scene.add(mesh);
 });
+scene.add(microphone);
+microphone.position.set(0, 4.3, 0);
+microphone.scale.set(2.5,2.5,2.5);
 
+let discoFloor = new THREE.Object3D();
 const floorLoader = new GLTFLoader().setPath('/3d_stuff/animated_dance_floor_neon_lights/');
 floorLoader.load('scene.gltf', (gltf) => {
-    const mesh = gltf.scene;
-    mesh.position.set(0, 1, 0);
-    mesh.scale.set(3,3,3);
-    scene.add(mesh);
+    discoFloor.add(gltf.scene);
 });
+scene.add(discoFloor);
+discoFloor.scale.set(4,4,4);
+discoFloor.position.set(0,1.01,0);
+
+let Rook = new THREE.Object3D();
+const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
+RookLoader.load('untitled.glb', (glb) => {
+    Rook.add(glb.scene);
+});
+scene.add(Rook);
+Rook.position.set(-11,0.9,-11);
+
+// const discoBallMat = new THREE.MeshStandardMaterial({
+//     envMap: deku
+// });
+let discoBall = new THREE.Object3D();
+const discoBallLoader = new GLTFLoader().setPath('/3d_stuff/free_realistic_disco_ball/');
+discoBallLoader.load('scene.gltf', (gltf) => {
+    discoBall.add(gltf.scene);
+});
+scene.add(discoBall);
+discoBall.position.set(5,15,5);
+discoBall.scale.set(0.3,0.3,0.3);
+
+const fakeDiscoG = new THREE.SphereGeometry(3);
+const fakeDisco = new THREE.Mesh(fakeDiscoG, new THREE.MeshPhongMaterial({visible: true, envMap: textureLoader.load(deku), roughness: 0, metalness: 1, shininess: 100}));
+scene.add(fakeDisco);
+fakeDisco.position.set(5,15,5);
+fakeDisco.scale.set(1.37, 1.37, 1.37);
+fakeDisco.name = "DISCO BALL";
 
 const gui = new dat.GUI();
 const options = {
@@ -156,29 +189,65 @@ gui.add(options, 'intensity', 0, 100000);
 
 let step = 0;
 
-// const mousePosition = new THREE.Vector2();
-// window.addEventListener('mousemove', function(e){
-//     mousePosition.x = (e.clientX / window.innerWidth) * 2 - 1,
-//     mousePosition.y = (e.clientY / window.innerHeight) * 2 - 1
-// });
+const mousePosition = new THREE.Vector2();
+window.addEventListener('mousemove', function(e){
+    mousePosition.x = (e.clientX / window.innerWidth) * 2 - 1,
+    mousePosition.y = -(e.clientY / window.innerHeight) * 2 + 1
+});
 
-//const rayCaster = new THREE.Raycaster();
-
+const rayCaster = new THREE.Raycaster();
+let micMoveRight = true;
+let micMoveForward = true;
 
 function animate(time){
     box.rotation.y = time / 1000;
     box.rotation.x = time / 1000;
+
+    if(microphone.position.x >= 5){micMoveRight = !micMoveRight}
+    else if(microphone.position.x <= -5){micMoveRight = !micMoveRight}
+    if(microphone.position.z >= 5){micMoveForward = !micMoveForward}
+    else if(microphone.position.z <= -5){micMoveForward = !micMoveForward}
+    if(micMoveRight){microphone.position.x += 0.5;}
+    else{microphone.position.x -= 0.5;}
+    if(micMoveForward){microphone.position.z += 0.5;}
+    else{microphone.position.z -= 0.5;}
+    //console.log("X: " + microphone.position.x + ". Z: " + microphone.position.z);
+
+    //debugger;
+    //console.log("X: " + Rook.position.x + ", Y: " + Rook.position.y + ", Z: " + Rook.position.z);
+    //debugger;
+
+    if(Math.random() < 0.5){
+        Rook.position.setX(rookSingularPosition());
+    } else {
+        Rook.position.setZ(rookSingularPosition());
+    }
     
+
     step += options.speed;
     sphere.position.y = 10 * Math.abs(Math.sin(step));
+    discoBall.rotation.y = time/1000;
     spotlight.angle = options.angle;
     spotlight.penumbra = options.penumbra;
     spotlight.intensity = options.intensity;
     dLightHelper.update();
 
-    //rayCaster.setFromCamera(mousePosition, camera);
-    //const intersects = rayCaster.intersectObjects(scene.children);
+    rayCaster.setFromCamera(mousePosition, camera);
+    const intersects = rayCaster.intersectObjects(scene.children);
     //console.log(intersects);
+
+    intersects.forEach((intersect) => {
+        if(intersect.object.name === "DISCO BALL") {
+            discoBall.rotation.y = time/500;
+        }
+        if(intersect.object.name === 'memebox') {
+            intersect.object.rotation.x = time/1000;
+            intersect.object.rotation.y = time/1000;
+        }
+        if(intersect.object.id === box.id){
+            intersect.object.material.color.set(0xFF0000)
+        }
+    });
     
 
     renderer.render(scene, camera);
@@ -186,5 +255,6 @@ function animate(time){
 
 renderer.setAnimationLoop(animate);
 
-
-
+function rookSingularPosition(){
+    return randInt(0,11)*2 - 11;
+}
