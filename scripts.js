@@ -11,6 +11,7 @@ import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
 
 
 
+
 const renderer = new THREE.WebGLRenderer();
 
 renderer.shadowMap.enabled = true;
@@ -25,7 +26,7 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 const axesHelper = new THREE.AxesHelper(5);
 scene.add(axesHelper);
 
-camera.position.set(0,20,30);
+camera.position.set(-25,25,0);
 orbit.update();
 
 const boxGeometry = new THREE.BoxGeometry();
@@ -115,6 +116,16 @@ scene.background = cubeTextureLoader.load([
 // scene.add(box2);
 // box2.position.set(1,18, 10);
 // box2.material.map = textureLoader.load(fractal);
+let scenario = new THREE.Object3D();
+const sceneLoader = new GLTFLoader().setPath('/3d_stuff/night_club/');
+sceneLoader.load('scene.gltf', (gltf) => {
+    scenario.add(gltf.scene);
+});
+scene.add(scenario);
+scenario.scale.set(6.5, 6.5, 6.5);
+scenario.position.set(10, 0.2, 0);
+scenario.rotateY(-1.558);
+
 
 let microphone = new THREE.Object3D();
 const micLoader = new GLTFLoader().setPath('/3d_stuff/classic_microphone/');
