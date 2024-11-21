@@ -193,7 +193,7 @@ gui.addColor(options, 'sphereColor').onChange(function(e){
     sphere.material.color.set(e);
 });
 
-gui.add(options, 'speed', 0, 0,1);
+gui.add(options, 'speed', 0, 0.2);
 gui.add(options, 'angle', 0, 1);
 gui.add(options, 'penumbra', 0, 1);
 gui.add(options, 'intensity', 0, 100000);
