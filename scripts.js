@@ -77,9 +77,6 @@ scene.add(dLightHelper);
 spotlight.castShadow = true;
 spotlight.angle = 0.1;
 
-//scene.fog = new THREE.Fog(0xFFFFFF, 0, 200);
-//scene.fog = new THREE.FogExp2(0xffffff, 0.01);
-
 //aplicar color de fondo
 //renderer.setClearColor(0x000055);
 
@@ -98,32 +95,13 @@ scene.background = cubeTextureLoader.load([
     star
 ]);
 
-// const box2Geometry = new THREE.BoxGeometry(4,4,4);
-// const box2Mat = new THREE.MeshBasicMaterial({
-     //color: 0x00ff00,
-     //map: textureLoader.load(fractal)
-// });
-// const box2MulltiMaterial = [
-//     new THREE.MeshBasicMaterial({map: textureLoader.load(deku)}),
-//     new THREE.MeshBasicMaterial({map: textureLoader.load(star)}),
-//     new THREE.MeshBasicMaterial({map: textureLoader.load(mine1)}),
-//     new THREE.MeshBasicMaterial({map: textureLoader.load(gato)}),
-//     new THREE.MeshBasicMaterial({map: textureLoader.load(fractal)}),
-//     new THREE.MeshBasicMaterial({map: textureLoader.load(gato)}),
-// ];
-// const box2 = new THREE.Mesh(box2Geometry, box2MulltiMaterial);
-// scene.add(box2);
-// box2.position.set(1,18, 10);
-// box2.material.map = textureLoader.load(fractal);
 
 let microphone = new THREE.Object3D();
 const micLoader = new GLTFLoader().setPath('/3d_stuff/classic_microphone/');
-micLoader.load('scene.gltf', (gltf) => {
+micLoader.load('scene.gltf', gltf => {
     microphone.add(gltf.scene);
-    //mesh.position.set(0, 4.3, -1);
-    //mesh.scale.set(2.5,2.5,2.5);
-    //scene.add(mesh);
 });
+
 scene.add(microphone);
 microphone.position.set(0, 4.3, 0);
 microphone.scale.set(2.5,2.5,2.5);
