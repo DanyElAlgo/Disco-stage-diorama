@@ -90,13 +90,49 @@ function StartAnimation()
     // const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
     // scene.add(dLightShadowHelper);
 
-    const spotlight = new THREE.SpotLight(0xffffff, 1000000);
+    //Spotlights
+    const spotlight = new THREE.SpotLight(0xffffff, 1000);
     scene.add(spotlight);
     spotlight.position.set(-100,100,0);
 
-    const dLightHelper = new THREE.SpotLightHelper(spotlight);
+    const spotlight2 = new THREE.SpotLight(0xFFFFFF, 1000);
+    const spotlight3 = new THREE.SpotLight(0xFFFFFF, 1000);
+    const spotlight4 = new THREE.SpotLight(0xFFFFFF, 1000);
+    const spotlight5 = new THREE.SpotLight(0xFFFFFF, 1000);
+
+    scene.add(spotlight2);
+    scene.add(spotlight3);
+    scene.add(spotlight4);
+    scene.add(spotlight5);
+
+    spotlight2.position.set(0, 10, 0);
+    spotlight3.position.set(0, 15, 0);
+    spotlight4.position.set(0, 20, 0);
+    spotlight5.position.set(0, 25, 0);
+
+
+    const dLightHelper = new THREE.SpotLightHelper(spotlight, 0xFFFFFF);
+
+    const sLightHelper2 = new THREE.SpotLightHelper(spotlight2, 0xFF0000);
+    const sLightHelper3 = new THREE.SpotLightHelper(spotlight3, 0x00FF00);
+    const sLightHelper4 = new THREE.SpotLightHelper(spotlight4, 0x0000FF);
+    const sLightHelper5 = new THREE.SpotLightHelper(spotlight5, 0xFF00FF);
+
+
     scene.add(dLightHelper);
+    scene.add(sLightHelper2);
+    scene.add(sLightHelper3);
+    scene.add(sLightHelper4);
+    scene.add(sLightHelper5);
+
+
     spotlight.castShadow = true;
+
+    spotlight2.castShadow = true;
+    spotlight3.castShadow = true;
+    spotlight4.castShadow = true;
+    spotlight5.castShadow = true;
+
     spotlight.angle = 0.1;
 
     //aplicar color de fondo
@@ -188,6 +224,111 @@ function StartAnimation()
     gui.add(options, 'penumbra', 0, 1);
     gui.add(options, 'intensity', 0, 100000);
 
+    const guiSpotLight = new dat.GUI();
+    // const guiSpotLight2 = new dat.GUI();
+    // const guiSpotLight3 = new dat.GUI();
+    // const guiSpotLight4 = new dat.GUI();
+    // const guiSpotLight5 = new dat.GUI();
+
+    const guiSpotLight2 = guiSpotLight.addFolder('spotLight2');
+    const guiSpotLight3 = guiSpotLight.addFolder('spotLight3');
+    const guiSpotLight4 = guiSpotLight.addFolder('spotLight4');
+    const guiSpotLight5 = guiSpotLight.addFolder('spotLight5');
+
+    guiSpotLight2.add(spotlight2.position, 'x', -50, 50);
+    guiSpotLight2.add(spotlight2.position, 'y', -50, 50);
+    guiSpotLight2.add(spotlight2.position, 'z', -50, 50);
+    guiSpotLight2.add(spotlight2, 'intensity', 0, 10000);
+    guiSpotLight2.add(spotlight2, 'angle', 0, 1);
+    guiSpotLight2.add(spotlight2.target.position, 'x', -50, 50);
+    guiSpotLight2.add(spotlight2.target.position, 'y', -50, 50);
+    guiSpotLight2.add(spotlight2.target.position, 'z', -50, 50);
+
+    guiSpotLight3.add(spotlight3.position, 'x', -50, 50);
+    guiSpotLight3.add(spotlight3.position, 'y', -50, 50);
+    guiSpotLight3.add(spotlight3.position, 'z', -50, 50);
+    guiSpotLight3.add(spotlight3, 'intensity', 0, 10000);
+    guiSpotLight3.add(spotlight3, 'angle', 0, 1);
+    guiSpotLight3.add(spotlight3.target.position, 'x', -50, 50);
+    guiSpotLight3.add(spotlight3.target.position, 'y', -50, 50);
+    guiSpotLight3.add(spotlight3.target.position, 'z', -50, 50);
+
+    guiSpotLight4.add(spotlight4.position, 'x', -50, 50);
+    guiSpotLight4.add(spotlight4.position, 'y', -50, 50);
+    guiSpotLight4.add(spotlight4.position, 'z', -50, 50);
+    guiSpotLight4.add(spotlight4, 'intensity', 0, 10000);
+    guiSpotLight4.add(spotlight4, 'angle', 0, 1);
+    guiSpotLight4.add(spotlight4.target.position, 'x', -50, 50);
+    guiSpotLight4.add(spotlight4.target.position, 'y', -50, 50);
+    guiSpotLight4.add(spotlight4.target.position, 'z', -50, 50);
+
+    guiSpotLight5.add(spotlight5.position, 'x', -50, 50);
+    guiSpotLight5.add(spotlight5.position, 'y', -50, 50);
+    guiSpotLight5.add(spotlight5.position, 'z', -50, 50);
+    guiSpotLight5.add(spotlight5, 'intensity', 0, 10000);
+    guiSpotLight5.add(spotlight5, 'angle', 0, 1);
+    guiSpotLight5.add(spotlight5.target.position, 'x', -50, 50);
+    guiSpotLight5.add(spotlight5.target.position, 'y', -50, 50);
+    guiSpotLight5.add(spotlight5.target.position, 'z', -50, 50);
+
+
+    /*
+    spotlight2.position.set(0, 10, 0);
+    spotlight3.position.set(0, 15, 0);
+    spotlight4.position.set(0, 20, 0);
+    spotlight5.position.set(0, 25, 0);
+    */
+
+    // const optionsSpotLight2 = {
+    //     x: 0,
+    //     y: 10,
+    //     z: 0,
+    //     angle: 0.3,
+    //     intensity: 1000 
+    // };
+
+    // const optionsSpotLight3 = {
+    //     x: 0,
+    //     y: 15,
+    //     z: 0,
+    //     angle: 0.3,
+    //     intensity: 1000 
+    // }
+
+    // const optionsSpotLight4 = {
+    //     x: 0,
+    //     y: 20,
+    //     z: 0,
+    //     angle: 0.3,
+    //     intensity: 1000 
+    // }
+
+    // const optionsSpotLight5 = {
+    //     x: 0,
+    //     y: 25,
+    //     z: 0,
+    //     angle: 0.3,
+    //     intensity: 1000 
+    // }
+
+    // guiSpotLight2.add(optionsSpotLight2, 'x', -50, 50);
+    // guiSpotLight2.add(optionsSpotLight2, 'y', -50, 50);
+    // guiSpotLight2.add(optionsSpotLight2, 'z', -50, 50);
+
+    // guiSpotLight3.add(optionsSpotLight3, 'x', -50, 50);
+    // guiSpotLight3.add(optionsSpotLight3, 'y', -50, 50);
+    // guiSpotLight3.add(optionsSpotLight3, 'z', -50, 50);
+    
+    // guiSpotLight4.add(optionsSpotLight4, 'x', -50, 50);
+    // guiSpotLight4.add(optionsSpotLight4, 'y', -50, 50);
+    // guiSpotLight4.add(optionsSpotLight4, 'z', -50, 50);
+    
+    // guiSpotLight5.add(optionsSpotLight5, 'x', -50, 50);
+    // guiSpotLight5.add(optionsSpotLight5, 'y', -50, 50);
+    // guiSpotLight5.add(optionsSpotLight5, 'z', -50, 50);
+
+
+
     let step = 0;
 
     const mousePosition = new THREE.Vector2();
@@ -231,7 +372,29 @@ function StartAnimation()
         spotlight.angle = options.angle;
         spotlight.penumbra = options.penumbra;
         spotlight.intensity = options.intensity;
+        
+        // spotlight2.position.x = optionsSpotLight2.x;
+        // spotlight2.position.y = optionsSpotLight2.y;
+        // spotlight2.position.z = optionsSpotLight2.z;
+
+        // spotlight3.position.x = optionsSpotLight3.x;
+        // spotlight3.position.y = optionsSpotLight3.y;
+        // spotlight3.position.z = optionsSpotLight3.z;
+
+        // spotlight4.position.x = optionsSpotLight4.x;
+        // spotlight4.position.y = optionsSpotLight4.y;
+        // spotlight4.position.z = optionsSpotLight4.z;
+
+        // spotlight5.position.x = optionsSpotLight5.x;
+        // spotlight5.position.y = optionsSpotLight5.y;
+        // spotlight5.position.z = optionsSpotLight5.z;
+
         dLightHelper.update();
+
+        sLightHelper2.update();
+        sLightHelper3.update();
+        sLightHelper4.update();
+        sLightHelper5.update();
 
         rayCaster.setFromCamera(mousePosition, camera);
         const intersects = rayCaster.intersectObjects(scene.children);
@@ -265,8 +428,8 @@ function StartAnimation()
 function PlayMusic()
 {
     const audio = document.getElementById('music1');
-    
-    //console.log(audio);
+    audio.volume = 0.5;
+    console.log(audio);
     audio.play();
 }
 
