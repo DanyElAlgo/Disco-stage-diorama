@@ -33,6 +33,7 @@ acceptButton.addEventListener('click', () => {
     body.style.margin = 0;
 
     StartAnimation();
+    PlayMusic();
 });
 
 
@@ -256,6 +257,18 @@ function StartAnimation()
     renderer.setAnimationLoop(animate);
 }
 
+
+//Por alguna razon al llamar la funcion de reproducir musica me tira un error en la consola de un icon no encontrado
+//Pero la funcionalidad de la app queda intacta creo
+//Investigare mas sobre la situacion
+
+function PlayMusic()
+{
+    const audio = document.getElementById('music1');
+    
+    //console.log(audio);
+    audio.play();
+}
 
 // function rookSingularPosition(){
 //     return randInt(0,11)*2 - 11;
