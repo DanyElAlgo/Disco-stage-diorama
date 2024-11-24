@@ -8,6 +8,7 @@ import star from '/img/star2.jpg';
 import gato from '/img/no_hace_nada.jpeg';
 import fractal from '/img/fractal.jpg';
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
+import { cameraWorldMatrix } from 'three/webgpu';
 
 
 
@@ -44,6 +45,8 @@ scene.add(plane);
 
 const gridHelper = new THREE.GridHelper(30);
 scene.add(gridHelper);
+
+var mixer = new THREE.AnimationMixer(); //animation variable :O
 
 const sphereGeo = new THREE.SphereGeometry(4);
 const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
@@ -177,6 +180,32 @@ RookLoader.load('untitled.glb', (glb) => {
 scene.add(Rook);
 Rook.position.set(-11,0.9,-11);
 
+const MarioLoader = new GLTFLoader().setPath('/3d_stuff/Mario64/');
+MarioLoader.load('untitled.glb', (glb) => {
+    glb.scene.traverse( function ( child ) {
+
+        if ( child.isMesh ) {
+
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+        }
+
+    } );
+    const model = glb.scene;
+    scene.add(model);
+    model.scale.set(200,200,200);
+    model.position.setY(1);
+    model.position.setX(5);
+    mixer = new THREE.AnimationMixer(model);
+    const clips = glb.animations;
+    const clip = THREE.AnimationClip.findByName(clips, 'Armature|mixamo.com|Layer0');
+    const action = mixer.clipAction(clip);
+    action.play();
+    debugger;
+    
+});
+
 // const discoBallMat = new THREE.MeshStandardMaterial({
 //     envMap: deku
 // });
@@ -252,6 +281,9 @@ const rayCaster = new THREE.Raycaster();
 let micMoveRight = true;
 let micMoveForward = true;
 
+const clock = new THREE.Clock();
+debugger;
+
 function animate(time){
     box.rotation.y = time / 1000;
     box.rotation.x = time / 1000;
@@ -302,6 +334,8 @@ function animate(time){
             intersect.object.material.color.set(0xFF0000)
         }
     });
+    debugger;
+    mixer.update(clock.getDelta()*1.5);
     
 
     renderer.render(scene, camera);
