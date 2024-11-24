@@ -10,7 +10,7 @@ import fractal from '/img/fractal.jpg';
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
 import { element } from 'three/webgpu';
 import { ssrExportAllKey } from 'vite/runtime';
-
+import { cameraWorldMatrix } from 'three/webgpu';
 
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
@@ -18,7 +18,6 @@ const body = document.body;
 const renderer = new THREE.WebGLRenderer();
 renderer.shadowMap.enabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
-
 
 acceptButton.addEventListener('click', () => {
 
@@ -67,29 +66,20 @@ function StartAnimation()
 
     const gridHelper = new THREE.GridHelper(30);
     scene.add(gridHelper);
+  
+    var mixer = new THREE.AnimationMixer();
+  
+    const sphereGeo = new THREE.SphereGeometry(4);
+    const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
+    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    sphere.position.set(-10,10,0);
+    sphere.castShadow = true;
+    //scene.add(sphere);
+    sphere.name = "BALL";
 
-    // const sphereGeo = new THREE.SphereGeometry(4);
-    // const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
-    // const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-    // sphere.position.set(-10,10,0);
-    // sphere.castShadow = true;
-    // scene.add(sphere);
-    // sphere.name = "BALL";
 
     const ambientLight = new THREE.AmbientLight(0x333333);
     scene.add(ambientLight);
-
-    // const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 10);
-    // directionalLight.position.set(-30,50,0);
-    // directionalLight.castShadow = true;
-    // directionalLight.shadow.camera.bottom = -12;
-    // scene.add(directionalLight);
-
-    // const dLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
-    // scene.add(dLightHelper);
-
-    // const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
-    // scene.add(dLightShadowHelper);
 
     //Spotlights
     const spotlight = new THREE.SpotLight(0xffffff, 1000);
@@ -145,69 +135,170 @@ function StartAnimation()
 
     //aplicar color de fondo
     //renderer.setClearColor(0x000055);
-
+  
     //aplicar una textura de fondo estático
     const textureLoader = new THREE.TextureLoader();
-    // scene.background = textureLoader.load(deku);
-
+    scene.background = textureLoader.load(deku);
+  
     //aplicar caja de fondo, espacio mundial
     const cubeTextureLoader = new THREE.CubeTextureLoader();
-    
-    // scene.background = cubeTextureLoader.load([
-    //     mine1,
-    //     deku,
-    //     star,
-    //     star,
-    //     star,
-    //     star
-    // ]);
+    scene.background = cubeTextureLoader.load([
+        mine1,
+        deku,
+        star,
+        star,
+        star,
+        star
+    ]);
 
 
+    //MICROFONO
     let microphone = new THREE.Object3D();
     const micLoader = new GLTFLoader().setPath('/3d_stuff/classic_microphone/');
-    micLoader.load('scene.gltf', gltf => {
-        microphone.add(gltf.scene);
-    });
+    micLoader.load('scene.gltf', (gltf) => {
+        gltf.scene.traverse( function ( child ) {
 
+            if ( child.isMesh ) {
+
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+            }
+
+        } );
+        microphone.add(gltf.scene);
+        //mesh.position.set(0, 4.3, -1);
+        //mesh.scale.set(2.5,2.5,2.5);
+        //scene.add(mesh);
+    });
+    microphone.castShadow = true;
     scene.add(microphone);
     microphone.position.set(0, 4.3, 0);
     microphone.scale.set(2.5,2.5,2.5);
 
+
+    // DISCO FLOOR
     let discoFloor = new THREE.Object3D();
     const floorLoader = new GLTFLoader().setPath('/3d_stuff/animated_dance_floor_neon_lights/');
     floorLoader.load('scene.gltf', (gltf) => {
+        gltf.scene.traverse( function ( child ) {
+
+            if ( child.isMesh ) {
+
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+            }
+
+        } );
         discoFloor.add(gltf.scene);
     });
     scene.add(discoFloor);
     discoFloor.scale.set(4,4,4);
     discoFloor.position.set(0,1.01,0);
 
-    // let Rook = new THREE.Object3D();
-    // const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
-    // RookLoader.load('untitled.glb', (glb) => {
-    //     Rook.add(glb.scene);
-    // });
-    // scene.add(Rook);
-    // Rook.position.set(-11,0.9,-11);
+
+    //PIEZA DE AJEDREZ
+    let Rook = new THREE.Object3D();
+    const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
+    RookLoader.load('untitled.glb', (glb) => {
+        glb.scene.traverse( function ( child ) {
+
+            if ( child.isMesh ) {
+
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+            }
+
+        } );
+        Rook.add(glb.scene);
+    });
+    scene.add(Rook);
+    Rook.position.set(-11,0.9,-11);
+
+    const MarioLoader = new GLTFLoader().setPath('/3d_stuff/Mario64/');
+    MarioLoader.load('untitled.glb', (glb) => {
+        glb.scene.traverse( function ( child ) {
+
+            if ( child.isMesh ) {
+
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+            }
+
+        } );
+        const model = glb.scene;
+        scene.add(model);
+        model.scale.set(200,200,200);
+        model.position.setY(1);
+        model.position.setX(5);
+        mixer = new THREE.AnimationMixer(model);
+        const clips = glb.animations;
+        const clip = THREE.AnimationClip.findByName(clips, 'Armature|mixamo.com|Layer0');
+        const action = mixer.clipAction(clip);
+        action.play();
+
+    });
 
     // const discoBallMat = new THREE.MeshStandardMaterial({
     //     envMap: deku
     // });
+
+    // DISCO BALL
     let discoBall = new THREE.Object3D();
     const discoBallLoader = new GLTFLoader().setPath('/3d_stuff/free_realistic_disco_ball/');
     discoBallLoader.load('scene.gltf', (gltf) => {
         discoBall.add(gltf.scene);
     });
     scene.add(discoBall);
-    discoBall.position.set(0,15,0);
+    discoBall.position.set(5,15,5);
     discoBall.scale.set(0.3,0.3,0.3);
 
     const fakeDiscoG = new THREE.SphereGeometry(3);
     const fakeDisco = new THREE.Mesh(fakeDiscoG, new THREE.MeshPhongMaterial({visible: true, envMap: textureLoader.load(deku), roughness: 0, metalness: 1, shininess: 100}));
     scene.add(fakeDisco);
     fakeDisco.position.set(5,15,5);
-    fakeDisco.scale.set(1.37, 1.37, 1.37);
+    fakeDisco.scale.set(.92, .92, .92);
     fakeDisco.name = "DISCO BALL";
+
+
+
+    //ESCENARIO
+    let scenario = new THREE.Object3D();
+    const sceneLoader = new GLTFLoader().setPath('/3d_stuff/nightclub/');
+    sceneLoader.load('scene.gltf', (gltf) => {
+        scenario.add(gltf.scene);
+    });
+    scene.add(scenario);
+
+    //CONFIGURACIONES 2//
+    scenario.scale.set(4, 4, 4);
+    //scenario.position.set(-105, -3 ,70);
+
+    //GUI 
+
+    let DJSet = new THREE.Object3D();
+    const DJLoader = new GLTFLoader().setPath('/3d_stuff/dj_set/');
+    DJLoader.load('scene.gltf', (gltf) => {
+        gltf.scene.traverse( function ( child ) {
+
+            if ( child.isMesh ) {
+
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+            }
+
+        });
+        DJSet.add(gltf.scene);
+    });
+    scene.add(DJSet);
+    DJSet.position.set(11,1.2,-11);
+    DJSet.scale.set(0.2,0.2,0.2);
+    DJSet.rotation.set(0,5.8,0);
+
 
     const gui = new dat.GUI();
     const options = {
@@ -233,11 +324,7 @@ function StartAnimation()
     gui.add(options, 'intensity', 0, 100000);
 
     const guiSpotLight = new dat.GUI();
-    // const guiSpotLight2 = new dat.GUI();
-    // const guiSpotLight3 = new dat.GUI();
-    // const guiSpotLight4 = new dat.GUI();
-    // const guiSpotLight5 = new dat.GUI();
-
+  
     const colorOptions2 = {
         color: spotlight2.color.getHex()
     };
@@ -318,63 +405,6 @@ function StartAnimation()
     guiSpotLight5.add(spotlight5, 'decay', 0, 4);
 
 
-    /*
-    spotlight2.position.set(0, 10, 0);
-    spotlight3.position.set(0, 15, 0);
-    spotlight4.position.set(0, 20, 0);
-    spotlight5.position.set(0, 25, 0);
-    */
-
-    // const optionsSpotLight2 = {
-    //     x: 0,
-    //     y: 10,
-    //     z: 0,
-    //     angle: 0.3,
-    //     intensity: 1000 
-    // };
-
-    // const optionsSpotLight3 = {
-    //     x: 0,
-    //     y: 15,
-    //     z: 0,
-    //     angle: 0.3,
-    //     intensity: 1000 
-    // }
-
-    // const optionsSpotLight4 = {
-    //     x: 0,
-    //     y: 20,
-    //     z: 0,
-    //     angle: 0.3,
-    //     intensity: 1000 
-    // }
-
-    // const optionsSpotLight5 = {
-    //     x: 0,
-    //     y: 25,
-    //     z: 0,
-    //     angle: 0.3,
-    //     intensity: 1000 
-    // }
-
-    // guiSpotLight2.add(optionsSpotLight2, 'x', -50, 50);
-    // guiSpotLight2.add(optionsSpotLight2, 'y', -50, 50);
-    // guiSpotLight2.add(optionsSpotLight2, 'z', -50, 50);
-
-    // guiSpotLight3.add(optionsSpotLight3, 'x', -50, 50);
-    // guiSpotLight3.add(optionsSpotLight3, 'y', -50, 50);
-    // guiSpotLight3.add(optionsSpotLight3, 'z', -50, 50);
-    
-    // guiSpotLight4.add(optionsSpotLight4, 'x', -50, 50);
-    // guiSpotLight4.add(optionsSpotLight4, 'y', -50, 50);
-    // guiSpotLight4.add(optionsSpotLight4, 'z', -50, 50);
-    
-    // guiSpotLight5.add(optionsSpotLight5, 'x', -50, 50);
-    // guiSpotLight5.add(optionsSpotLight5, 'y', -50, 50);
-    // guiSpotLight5.add(optionsSpotLight5, 'z', -50, 50);
-
-
-
     let step = 0;
 
     const mousePosition = new THREE.Vector2();
@@ -383,34 +413,15 @@ function StartAnimation()
         mousePosition.y = -(e.clientY / window.innerHeight) * 2 + 1
     });
 
-    const rayCaster = new THREE.Raycaster();
-    // let micMoveRight = true;
-    // let micMoveForward = true;
 
+    const rayCaster = new THREE.Raycaster();
+    let micMoveRight = true;
+    let micMoveForward = true;
+    const clock = new THREE.Clock();
+   
     function animate(time){
         box.rotation.y = time / 1000;
         box.rotation.x = time / 1000;
-
-        // if(microphone.position.x >= 5){micMoveRight = !micMoveRight}
-        // else if(microphone.position.x <= -5){micMoveRight = !micMoveRight}
-        // if(microphone.position.z >= 5){micMoveForward = !micMoveForward}
-        // else if(microphone.position.z <= -5){micMoveForward = !micMoveForward}
-        // if(micMoveRight){microphone.position.x += 0.5;}
-        // else{microphone.position.x -= 0.5;}
-        // if(micMoveForward){microphone.position.z += 0.5;}
-        // else{microphone.position.z -= 0.5;}
-        //console.log("X: " + microphone.position.x + ". Z: " + microphone.position.z);
-
-        //debugger;
-        //console.log("X: " + Rook.position.x + ", Y: " + Rook.position.y + ", Z: " + Rook.position.z);
-        //debugger;
-
-        // if(Math.random() < 0.5){
-        //     Rook.position.setX(rookSingularPosition());
-        // } else {
-        //     Rook.position.setZ(rookSingularPosition());
-        // }
-        
 
         step += options.speed;
         //sphere.position.y = 10 * Math.abs(Math.sin(step));
@@ -418,23 +429,7 @@ function StartAnimation()
         spotlight.angle = options.angle;
         spotlight.penumbra = options.penumbra;
         spotlight.intensity = options.intensity;
-        
-        // spotlight2.position.x = optionsSpotLight2.x;
-        // spotlight2.position.y = optionsSpotLight2.y;
-        // spotlight2.position.z = optionsSpotLight2.z;
-
-        // spotlight3.position.x = optionsSpotLight3.x;
-        // spotlight3.position.y = optionsSpotLight3.y;
-        // spotlight3.position.z = optionsSpotLight3.z;
-
-        // spotlight4.position.x = optionsSpotLight4.x;
-        // spotlight4.position.y = optionsSpotLight4.y;
-        // spotlight4.position.z = optionsSpotLight4.z;
-
-        // spotlight5.position.x = optionsSpotLight5.x;
-        // spotlight5.position.y = optionsSpotLight5.y;
-        // spotlight5.position.z = optionsSpotLight5.z;
-
+    
         dLightHelper.update();
 
         sLightHelper2.update();
@@ -444,8 +439,7 @@ function StartAnimation()
 
         rayCaster.setFromCamera(mousePosition, camera);
         const intersects = rayCaster.intersectObjects(scene.children);
-        //console.log(intersects);
-
+      
         intersects.forEach((intersect) => {
             if(intersect.object.name === "DISCO BALL") {
                 discoBall.rotation.y = time/500;
@@ -458,18 +452,15 @@ function StartAnimation()
                 intersect.object.material.color.set(0xFF0000)
             }
         });
+      
+        mixer.update(clock.getDelta()*1.5);
         
-
         renderer.render(scene, camera);
     }
 
     renderer.setAnimationLoop(animate);
 }
 
-
-//Por alguna razon al llamar la funcion de reproducir musica me tira un error en la consola de un icon no encontrado
-//Pero la funcionalidad de la app queda intacta creo
-//Investigare mas sobre la situacion
 
 function PlayMusic()
 {
@@ -479,6 +470,8 @@ function PlayMusic()
     audio.play();
 }
 
-// function rookSingularPosition(){
-//     return randInt(0,11)*2 - 11;
-// }
+
+function rookSingularPosition(){
+    return randInt(0,11)*2 - 11;
+}
+
