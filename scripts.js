@@ -243,6 +243,8 @@ function StartAnimation()
     guiSpotLight2.add(spotlight2.target.position, 'x', -50, 50);
     guiSpotLight2.add(spotlight2.target.position, 'y', -50, 50);
     guiSpotLight2.add(spotlight2.target.position, 'z', -50, 50);
+    guiSpotLight2.add(spotlight2, 'distance', 0, 100);
+    guiSpotLight2.add(spotlight2, 'decay', 0, 4);
 
     guiSpotLight3.add(spotlight3.position, 'x', -50, 50);
     guiSpotLight3.add(spotlight3.position, 'y', -50, 50);
@@ -252,6 +254,8 @@ function StartAnimation()
     guiSpotLight3.add(spotlight3.target.position, 'x', -50, 50);
     guiSpotLight3.add(spotlight3.target.position, 'y', -50, 50);
     guiSpotLight3.add(spotlight3.target.position, 'z', -50, 50);
+    guiSpotLight3.add(spotlight3, 'distance', 0, 100);
+    guiSpotLight3.add(spotlight3, 'decay', 0, 4);
 
     guiSpotLight4.add(spotlight4.position, 'x', -50, 50);
     guiSpotLight4.add(spotlight4.position, 'y', -50, 50);
@@ -261,6 +265,8 @@ function StartAnimation()
     guiSpotLight4.add(spotlight4.target.position, 'x', -50, 50);
     guiSpotLight4.add(spotlight4.target.position, 'y', -50, 50);
     guiSpotLight4.add(spotlight4.target.position, 'z', -50, 50);
+    guiSpotLight4.add(spotlight4, 'distance', 0, 100);
+    guiSpotLight4.add(spotlight4, 'decay', 0, 4);
 
     guiSpotLight5.add(spotlight5.position, 'x', -50, 50);
     guiSpotLight5.add(spotlight5.position, 'y', -50, 50);
@@ -270,6 +276,8 @@ function StartAnimation()
     guiSpotLight5.add(spotlight5.target.position, 'x', -50, 50);
     guiSpotLight5.add(spotlight5.target.position, 'y', -50, 50);
     guiSpotLight5.add(spotlight5.target.position, 'z', -50, 50);
+    guiSpotLight5.add(spotlight5, 'distance', 0, 100);
+    guiSpotLight5.add(spotlight5, 'decay', 0, 4);
 
 
     /*
