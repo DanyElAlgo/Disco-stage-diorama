@@ -9,6 +9,7 @@ import gato from '/img/no_hace_nada.jpeg';
 import fractal from '/img/fractal.jpg';
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
 import { element } from 'three/webgpu';
+import { ssrExportAllKey } from 'vite/runtime';
 
 
 const acceptButton = document.getElementById('acceptButton');
@@ -92,7 +93,7 @@ function StartAnimation()
 
     //Spotlights
     const spotlight = new THREE.SpotLight(0xffffff, 1000);
-    scene.add(spotlight);
+    //scene.add(spotlight);
     spotlight.position.set(-100,100,0);
 
     const spotlight2 = new THREE.SpotLight(0xFFFFFF, 1000);
@@ -119,7 +120,8 @@ function StartAnimation()
     const sLightHelper5 = new THREE.SpotLightHelper(spotlight5, 0xFF00FF);
 
 
-    scene.add(dLightHelper);
+    //scene.add(dLightHelper);
+
     scene.add(sLightHelper2);
     scene.add(sLightHelper3);
     scene.add(sLightHelper4);
@@ -132,6 +134,12 @@ function StartAnimation()
     spotlight3.castShadow = true;
     spotlight4.castShadow = true;
     spotlight5.castShadow = true;
+
+    spotlight2.decay = 1;
+    spotlight3.decay = 1;
+    spotlight4.decay = 1;
+    spotlight5.decay = 1;
+
 
     spotlight.angle = 0.1;
 
@@ -230,10 +238,40 @@ function StartAnimation()
     // const guiSpotLight4 = new dat.GUI();
     // const guiSpotLight5 = new dat.GUI();
 
+    const colorOptions2 = {
+        color: spotlight2.color.getHex()
+    };
+
+    const colorOptions3 = {
+        color: spotlight3.color.getHex()
+    };
+
+    const colorOptions4 = {
+        color: spotlight4.color.getHex()
+    };
+
+    const colorOptions5 = {
+        color: spotlight5.color.getHex()
+    };
+
     const guiSpotLight2 = guiSpotLight.addFolder('spotLight2');
     const guiSpotLight3 = guiSpotLight.addFolder('spotLight3');
     const guiSpotLight4 = guiSpotLight.addFolder('spotLight4');
     const guiSpotLight5 = guiSpotLight.addFolder('spotLight5');
+    
+    guiSpotLight2.addColor(colorOptions2, 'color').onChange(() => {
+        spotlight2.color.setHex(Number(colorOptions2.color.toString().replace('#','0x')))
+    });
+    guiSpotLight3.addColor(colorOptions3, 'color').onChange(() => {
+        spotlight3.color.setHex(Number(colorOptions3.color.toString().replace('#', '0x')))
+    })
+    guiSpotLight4.addColor(colorOptions4, 'color').onChange(() => {
+        spotlight4.color.setHex(Number(colorOptions4.color.toString().replace('#', '0x')))
+    })
+    guiSpotLight5.addColor(colorOptions5, 'color').onChange(() => {
+        spotlight5.color.setHex(Number(colorOptions5.color.toString().replace('#', '0x')))
+    })
+
 
     guiSpotLight2.add(spotlight2.position, 'x', -50, 50);
     guiSpotLight2.add(spotlight2.position, 'y', -50, 50);
