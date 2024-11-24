@@ -51,7 +51,7 @@ const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
 const sphere = new THREE.Mesh(sphereGeo, sphereMat);
 sphere.position.set(-10,10,0);
 sphere.castShadow = true;
-scene.add(sphere);
+//scene.add(sphere);
 sphere.name = "BALL";
 
 const ambientLight = new THREE.AmbientLight(0x333333);
@@ -116,17 +116,9 @@ scene.background = cubeTextureLoader.load([
 // scene.add(box2);
 // box2.position.set(1,18, 10);
 // box2.material.map = textureLoader.load(fractal);
-let scenario = new THREE.Object3D();
-const sceneLoader = new GLTFLoader().setPath('/3d_stuff/night_club/');
-sceneLoader.load('scene.gltf', (gltf) => {
-    scenario.add(gltf.scene);
-});
-scene.add(scenario);
-scenario.scale.set(6.5, 6.5, 6.5);
-scenario.position.set(10, 0.2, 0);
-scenario.rotateY(-1.558);
 
 
+//MICROFONO
 let microphone = new THREE.Object3D();
 const micLoader = new GLTFLoader().setPath('/3d_stuff/classic_microphone/');
 micLoader.load('scene.gltf', (gltf) => {
@@ -139,6 +131,9 @@ scene.add(microphone);
 microphone.position.set(0, 4.3, 0);
 microphone.scale.set(2.5,2.5,2.5);
 
+
+// DISCO FLOOR
+
 let discoFloor = new THREE.Object3D();
 const floorLoader = new GLTFLoader().setPath('/3d_stuff/animated_dance_floor_neon_lights/');
 floorLoader.load('scene.gltf', (gltf) => {
@@ -148,6 +143,8 @@ scene.add(discoFloor);
 discoFloor.scale.set(4,4,4);
 discoFloor.position.set(0,1.01,0);
 
+
+//PIEZA DE AJEDREZ
 let Rook = new THREE.Object3D();
 const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
 RookLoader.load('untitled.glb', (glb) => {
@@ -159,6 +156,8 @@ Rook.position.set(-11,0.9,-11);
 // const discoBallMat = new THREE.MeshStandardMaterial({
 //     envMap: deku
 // });
+
+// DISCO BALL
 let discoBall = new THREE.Object3D();
 const discoBallLoader = new GLTFLoader().setPath('/3d_stuff/free_realistic_disco_ball/');
 discoBallLoader.load('scene.gltf', (gltf) => {
@@ -175,6 +174,20 @@ fakeDisco.position.set(5,15,5);
 fakeDisco.scale.set(1.37, 1.37, 1.37);
 fakeDisco.name = "DISCO BALL";
 
+
+//ESCENARIO
+let scenario = new THREE.Object3D();
+const sceneLoader = new GLTFLoader().setPath('/3d_stuff/nightclub/');
+sceneLoader.load('scene.gltf', (gltf) => {
+    scenario.add(gltf.scene);
+});
+scene.add(scenario);
+
+//CONFIGURACIONES 2//
+scenario.scale.set(4, 4, 4);
+//scenario.position.set(-105, -3 ,70);
+
+//GUI 
 const gui = new dat.GUI();
 const options = {
     sphereColor: '#ffea00',
