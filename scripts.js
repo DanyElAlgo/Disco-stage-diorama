@@ -8,6 +8,7 @@ import star from '/img/star2.jpg';
 import gato from '/img/no_hace_nada.jpeg';
 import fractal from '/img/fractal.jpg';
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
+import { cameraWorldMatrix } from 'three/webgpu';
 
 
 
@@ -45,6 +46,8 @@ scene.add(plane);
 
 const gridHelper = new THREE.GridHelper(30);
 scene.add(gridHelper);
+
+var mixer = new THREE.AnimationMixer(); //animation variable :O
 
 const sphereGeo = new THREE.SphereGeometry(4);
 const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
@@ -86,7 +89,7 @@ spotlight.angle = 0.1;
 
 //aplicar una textura de fondo estático
 const textureLoader = new THREE.TextureLoader();
-// scene.background = textureLoader.load(deku);
+scene.background = textureLoader.load(deku);
 
 //aplicar caja de fondo, espacio mundial
 const cubeTextureLoader = new THREE.CubeTextureLoader();
@@ -122,21 +125,41 @@ scene.background = cubeTextureLoader.load([
 let microphone = new THREE.Object3D();
 const micLoader = new GLTFLoader().setPath('/3d_stuff/classic_microphone/');
 micLoader.load('scene.gltf', (gltf) => {
+    gltf.scene.traverse( function ( child ) {
+
+        if ( child.isMesh ) {
+
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+        }
+
+    } );
     microphone.add(gltf.scene);
     //mesh.position.set(0, 4.3, -1);
     //mesh.scale.set(2.5,2.5,2.5);
     //scene.add(mesh);
 });
+microphone.castShadow = true;
 scene.add(microphone);
 microphone.position.set(0, 4.3, 0);
 microphone.scale.set(2.5,2.5,2.5);
 
 
 // DISCO FLOOR
-
 let discoFloor = new THREE.Object3D();
 const floorLoader = new GLTFLoader().setPath('/3d_stuff/animated_dance_floor_neon_lights/');
 floorLoader.load('scene.gltf', (gltf) => {
+    gltf.scene.traverse( function ( child ) {
+
+        if ( child.isMesh ) {
+
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+        }
+
+    } );
     discoFloor.add(gltf.scene);
 });
 scene.add(discoFloor);
@@ -148,10 +171,46 @@ discoFloor.position.set(0,1.01,0);
 let Rook = new THREE.Object3D();
 const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
 RookLoader.load('untitled.glb', (glb) => {
+    glb.scene.traverse( function ( child ) {
+
+        if ( child.isMesh ) {
+
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+        }
+
+    } );
     Rook.add(glb.scene);
 });
 scene.add(Rook);
 Rook.position.set(-11,0.9,-11);
+
+const MarioLoader = new GLTFLoader().setPath('/3d_stuff/Mario64/');
+MarioLoader.load('untitled.glb', (glb) => {
+    glb.scene.traverse( function ( child ) {
+
+        if ( child.isMesh ) {
+
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+        }
+
+    } );
+    const model = glb.scene;
+    scene.add(model);
+    model.scale.set(200,200,200);
+    model.position.setY(1);
+    model.position.setX(5);
+    mixer = new THREE.AnimationMixer(model);
+    const clips = glb.animations;
+    const clip = THREE.AnimationClip.findByName(clips, 'Armature|mixamo.com|Layer0');
+    const action = mixer.clipAction(clip);
+    action.play();
+    debugger;
+    
+});
 
 // const discoBallMat = new THREE.MeshStandardMaterial({
 //     envMap: deku
@@ -171,8 +230,9 @@ const fakeDiscoG = new THREE.SphereGeometry(3);
 const fakeDisco = new THREE.Mesh(fakeDiscoG, new THREE.MeshPhongMaterial({visible: true, envMap: textureLoader.load(deku), roughness: 0, metalness: 1, shininess: 100}));
 scene.add(fakeDisco);
 fakeDisco.position.set(5,15,5);
-fakeDisco.scale.set(1.37, 1.37, 1.37);
+fakeDisco.scale.set(.92, .92, .92);
 fakeDisco.name = "DISCO BALL";
+
 
 
 //ESCENARIO
@@ -188,6 +248,27 @@ scenario.scale.set(4, 4, 4);
 //scenario.position.set(-105, -3 ,70);
 
 //GUI 
+
+let DJSet = new THREE.Object3D();
+const DJLoader = new GLTFLoader().setPath('/3d_stuff/dj_set/');
+DJLoader.load('scene.gltf', (gltf) => {
+    gltf.scene.traverse( function ( child ) {
+
+        if ( child.isMesh ) {
+
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+        }
+
+    });
+    DJSet.add(gltf.scene);
+});
+scene.add(DJSet);
+DJSet.position.set(11,1.2,-11);
+DJSet.scale.set(0.2,0.2,0.2);
+DJSet.rotation.set(0,5.8,0);
+
 const gui = new dat.GUI();
 const options = {
     sphereColor: '#ffea00',
@@ -223,29 +304,33 @@ const rayCaster = new THREE.Raycaster();
 let micMoveRight = true;
 let micMoveForward = true;
 
+const clock = new THREE.Clock();
+debugger;
+
 function animate(time){
     box.rotation.y = time / 1000;
     box.rotation.x = time / 1000;
 
-    if(microphone.position.x >= 5){micMoveRight = !micMoveRight}
-    else if(microphone.position.x <= -5){micMoveRight = !micMoveRight}
-    if(microphone.position.z >= 5){micMoveForward = !micMoveForward}
-    else if(microphone.position.z <= -5){micMoveForward = !micMoveForward}
-    if(micMoveRight){microphone.position.x += 0.5;}
-    else{microphone.position.x -= 0.5;}
-    if(micMoveForward){microphone.position.z += 0.5;}
-    else{microphone.position.z -= 0.5;}
+    // if(microphone.position.x >= 5){micMoveRight = !micMoveRight}
+    // else if(microphone.position.x <= -5){micMoveRight = !micMoveRight}
+    // if(microphone.position.z >= 5){micMoveForward = !micMoveForward}
+    // else if(microphone.position.z <= -5){micMoveForward = !micMoveForward}
+
+    // if(micMoveRight){microphone.position.x += 0.25;}
+    // else{microphone.position.x -= 0.25;}
+    // if(micMoveForward){microphone.position.z += 0.25;}
+    // else{microphone.position.z -= 0.25;}
     //console.log("X: " + microphone.position.x + ". Z: " + microphone.position.z);
 
     //debugger;
     //console.log("X: " + Rook.position.x + ", Y: " + Rook.position.y + ", Z: " + Rook.position.z);
     //debugger;
 
-    if(Math.random() < 0.5){
-        Rook.position.setX(rookSingularPosition());
-    } else {
-        Rook.position.setZ(rookSingularPosition());
-    }
+    // if(Math.random() < 0.5){
+    //     Rook.position.setX(rookSingularPosition());
+    // } else {
+    //     Rook.position.setZ(rookSingularPosition());
+    // }
     
 
     step += options.speed;
@@ -262,7 +347,7 @@ function animate(time){
 
     intersects.forEach((intersect) => {
         if(intersect.object.name === "DISCO BALL") {
-            discoBall.rotation.y = time/500;
+            discoBall.rotation.y += 10;
         }
         if(intersect.object.name === 'memebox') {
             intersect.object.rotation.x = time/1000;
@@ -272,6 +357,8 @@ function animate(time){
             intersect.object.material.color.set(0xFF0000)
         }
     });
+    debugger;
+    mixer.update(clock.getDelta()*1.5);
     
 
     renderer.render(scene, camera);
