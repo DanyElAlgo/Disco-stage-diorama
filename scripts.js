@@ -14,6 +14,10 @@ import { element } from 'three/webgpu';
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
 const body = document.body;
+const renderer = new THREE.WebGLRenderer();
+renderer.shadowMap.enabled = true;
+renderer.setSize(window.innerWidth, window.innerHeight);
+
 
 acceptButton.addEventListener('click', () => {
 
@@ -34,13 +38,7 @@ acceptButton.addEventListener('click', () => {
 
 function StartAnimation()
 {
-    const renderer = new THREE.WebGLRenderer();
-
-    renderer.shadowMap.enabled = true;
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     const orbit = new OrbitControls(camera, renderer.domElement);
@@ -68,13 +66,13 @@ function StartAnimation()
     const gridHelper = new THREE.GridHelper(30);
     scene.add(gridHelper);
 
-    const sphereGeo = new THREE.SphereGeometry(4);
-    const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
-    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-    sphere.position.set(-10,10,0);
-    sphere.castShadow = true;
-    scene.add(sphere);
-    sphere.name = "BALL";
+    // const sphereGeo = new THREE.SphereGeometry(4);
+    // const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
+    // const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    // sphere.position.set(-10,10,0);
+    // sphere.castShadow = true;
+    // scene.add(sphere);
+    // sphere.name = "BALL";
 
     const ambientLight = new THREE.AmbientLight(0x333333);
     scene.add(ambientLight);
@@ -91,7 +89,7 @@ function StartAnimation()
     // const dLightShadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
     // scene.add(dLightShadowHelper);
 
-    const spotlight = new THREE.SpotLight(0xffffff, 10000);
+    const spotlight = new THREE.SpotLight(0xffffff, 1000000);
     scene.add(spotlight);
     spotlight.position.set(-100,100,0);
 
@@ -109,14 +107,15 @@ function StartAnimation()
 
     //aplicar caja de fondo, espacio mundial
     const cubeTextureLoader = new THREE.CubeTextureLoader();
-    scene.background = cubeTextureLoader.load([
-        mine1,
-        deku,
-        star,
-        star,
-        star,
-        star
-    ]);
+    
+    // scene.background = cubeTextureLoader.load([
+    //     mine1,
+    //     deku,
+    //     star,
+    //     star,
+    //     star,
+    //     star
+    // ]);
 
 
     let microphone = new THREE.Object3D();
@@ -138,13 +137,13 @@ function StartAnimation()
     discoFloor.scale.set(4,4,4);
     discoFloor.position.set(0,1.01,0);
 
-    let Rook = new THREE.Object3D();
-    const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
-    RookLoader.load('untitled.glb', (glb) => {
-        Rook.add(glb.scene);
-    });
-    scene.add(Rook);
-    Rook.position.set(-11,0.9,-11);
+    // let Rook = new THREE.Object3D();
+    // const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
+    // RookLoader.load('untitled.glb', (glb) => {
+    //     Rook.add(glb.scene);
+    // });
+    // scene.add(Rook);
+    // Rook.position.set(-11,0.9,-11);
 
     // const discoBallMat = new THREE.MeshStandardMaterial({
     //     envMap: deku
@@ -155,7 +154,7 @@ function StartAnimation()
         discoBall.add(gltf.scene);
     });
     scene.add(discoBall);
-    discoBall.position.set(5,15,5);
+    discoBall.position.set(0,15,0);
     discoBall.scale.set(0.3,0.3,0.3);
 
     const fakeDiscoG = new THREE.SphereGeometry(3);
@@ -197,36 +196,36 @@ function StartAnimation()
     });
 
     const rayCaster = new THREE.Raycaster();
-    let micMoveRight = true;
-    let micMoveForward = true;
+    // let micMoveRight = true;
+    // let micMoveForward = true;
 
     function animate(time){
         box.rotation.y = time / 1000;
         box.rotation.x = time / 1000;
 
-        if(microphone.position.x >= 5){micMoveRight = !micMoveRight}
-        else if(microphone.position.x <= -5){micMoveRight = !micMoveRight}
-        if(microphone.position.z >= 5){micMoveForward = !micMoveForward}
-        else if(microphone.position.z <= -5){micMoveForward = !micMoveForward}
-        if(micMoveRight){microphone.position.x += 0.5;}
-        else{microphone.position.x -= 0.5;}
-        if(micMoveForward){microphone.position.z += 0.5;}
-        else{microphone.position.z -= 0.5;}
+        // if(microphone.position.x >= 5){micMoveRight = !micMoveRight}
+        // else if(microphone.position.x <= -5){micMoveRight = !micMoveRight}
+        // if(microphone.position.z >= 5){micMoveForward = !micMoveForward}
+        // else if(microphone.position.z <= -5){micMoveForward = !micMoveForward}
+        // if(micMoveRight){microphone.position.x += 0.5;}
+        // else{microphone.position.x -= 0.5;}
+        // if(micMoveForward){microphone.position.z += 0.5;}
+        // else{microphone.position.z -= 0.5;}
         //console.log("X: " + microphone.position.x + ". Z: " + microphone.position.z);
 
         //debugger;
         //console.log("X: " + Rook.position.x + ", Y: " + Rook.position.y + ", Z: " + Rook.position.z);
         //debugger;
 
-        if(Math.random() < 0.5){
-            Rook.position.setX(rookSingularPosition());
-        } else {
-            Rook.position.setZ(rookSingularPosition());
-        }
+        // if(Math.random() < 0.5){
+        //     Rook.position.setX(rookSingularPosition());
+        // } else {
+        //     Rook.position.setZ(rookSingularPosition());
+        // }
         
 
         step += options.speed;
-        sphere.position.y = 10 * Math.abs(Math.sin(step));
+        //sphere.position.y = 10 * Math.abs(Math.sin(step));
         discoBall.rotation.y = time/1000;
         spotlight.angle = options.angle;
         spotlight.penumbra = options.penumbra;
@@ -258,6 +257,6 @@ function StartAnimation()
 }
 
 
-function rookSingularPosition(){
-    return randInt(0,11)*2 - 11;
-}
+// function rookSingularPosition(){
+//     return randInt(0,11)*2 - 11;
+// }
