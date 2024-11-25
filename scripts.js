@@ -361,6 +361,15 @@ function StartAnimation()
         mousePosition.y = -(e.clientY / window.innerHeight) * 2 + 1
     });
 
+    const colors1 = [new THREE.Color(0x333333), new THREE.Color(0xFF0000), new THREE.Color(0x00FF00), new THREE.Color(0x0000FF)];
+    const colors2 = [new THREE.Color(0x00FF00), new THREE.Color(0x0000FF), new THREE.Color(0x333333), new THREE.Color(0xFF0000)];
+    const colors3 = [new THREE.Color(0xFF0000), new THREE.Color(0x00FF00), new THREE.Color(0x0000FF), new THREE.Color(0x333333)];
+
+    let currentColorIndex = 0;
+    let nextColorIndex = 1;
+    let transitionTime = 0;
+    const transitionDuration = 0.2; 
+
     let micMoveRight = true;
     let micMoveForward = true;
     const clock = new THREE.Clock();
@@ -392,6 +401,25 @@ function StartAnimation()
                 intersect.object.material.color.set(0xFF0000)
             }
         });
+
+        transitionTime += 0.01;
+        // Interpolación del color
+        const lerpedColor1 = colors1[currentColorIndex].clone().lerp(colors1[nextColorIndex], transitionTime / transitionDuration);
+        const lerpedColor2 = colors2[currentColorIndex].clone().lerp(colors2[nextColorIndex], transitionTime / transitionDuration);
+        const lerpedColor3 = colors3[currentColorIndex].clone().lerp(colors3[nextColorIndex], transitionTime / transitionDuration);
+        
+        // Aplicar el color interpolado a la luz
+        ambientLight.color.set(lerpedColor3);
+        spotlight2.color.set(lerpedColor1);
+        spotlight3.color.set(lerpedColor2);
+
+        // Cambiar de color después de completar la transición
+        if (transitionTime >= transitionDuration) {
+            currentColorIndex = nextColorIndex;
+            nextColorIndex = (nextColorIndex + 1) % colors1.length;  // Ciclar entre los colores
+            transitionTime = 0;
+        }
+
       
         mixer.update(clock.getDelta()*1.5);
         renderer.render(scene, camera);
