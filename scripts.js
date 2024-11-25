@@ -8,7 +8,7 @@ import star from '/img/star2.jpg';
 import gato from '/img/no_hace_nada.jpeg';
 import fractal from '/img/fractal.jpg';
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
-import { element } from 'three/webgpu';
+import { element, Raycaster } from 'three/webgpu';
 import { ssrExportAllKey } from 'vite/runtime';
 import { cameraWorldMatrix } from 'three/webgpu';
 
@@ -18,8 +18,19 @@ const music = document.getElementById('music1');
 
 const body = document.body;
 const renderer = new THREE.WebGLRenderer();
+const rayCaster = new THREE.Raycaster();
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const orbit = new OrbitControls(camera, renderer.domElement);
+let indexMusic = 0;
+
+
+
 renderer.shadowMap.enabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
+
+document.addEventListener('mousedown', onMouseDown);
+
 
 acceptButton.addEventListener('click', () => {
 
@@ -56,9 +67,6 @@ function cambiarCancion() {
 function StartAnimation()
 {
     document.body.appendChild(renderer.domElement);
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const orbit = new OrbitControls(camera, renderer.domElement);
 
     const axesHelper = new THREE.AxesHelper(5);
     scene.add(axesHelper);
@@ -98,57 +106,27 @@ function StartAnimation()
     scene.add(ambientLight);
 
     //Spotlights
-    const spotlight = new THREE.SpotLight(0xffffff, 1000);
-    //scene.add(spotlight);
-    spotlight.position.set(-100,100,0);
-
     const spotlight2 = new THREE.SpotLight(0xFFFFFF, 1000);
     const spotlight3 = new THREE.SpotLight(0xFFFFFF, 1000);
-    const spotlight4 = new THREE.SpotLight(0xFFFFFF, 1000);
-    const spotlight5 = new THREE.SpotLight(0xFFFFFF, 1000);
-
+   
     scene.add(spotlight2);
     scene.add(spotlight3);
-    scene.add(spotlight4);
-    scene.add(spotlight5);
-
+   
     spotlight2.position.set(0, 10, 0);
     spotlight3.position.set(0, 15, 0);
-    spotlight4.position.set(0, 20, 0);
-    spotlight5.position.set(0, 25, 0);
-
-
-    const dLightHelper = new THREE.SpotLightHelper(spotlight, 0xFFFFFF);
-
+   
     const sLightHelper2 = new THREE.SpotLightHelper(spotlight2, 0xFF0000);
     const sLightHelper3 = new THREE.SpotLightHelper(spotlight3, 0x00FF00);
-    const sLightHelper4 = new THREE.SpotLightHelper(spotlight4, 0x0000FF);
-    const sLightHelper5 = new THREE.SpotLightHelper(spotlight5, 0xFF00FF);
-
-
-    //scene.add(dLightHelper);
-
+   
     scene.add(sLightHelper2);
     scene.add(sLightHelper3);
-    scene.add(sLightHelper4);
-    scene.add(sLightHelper5);
-
-
-    spotlight.castShadow = true;
 
     spotlight2.castShadow = true;
     spotlight3.castShadow = true;
-    spotlight4.castShadow = true;
-    spotlight5.castShadow = true;
-
+   
     spotlight2.decay = 1;
     spotlight3.decay = 1;
-    spotlight4.decay = 1;
-    spotlight5.decay = 1;
-
-
-    spotlight.angle = 0.1;
-
+    
     //aplicar color de fondo
     //renderer.setClearColor(0x000055);
   
@@ -183,9 +161,6 @@ function StartAnimation()
 
         } );
         microphone.add(gltf.scene);
-        //mesh.position.set(0, 4.3, -1);
-        //mesh.scale.set(2.5,2.5,2.5);
-        //scene.add(mesh);
     });
     microphone.castShadow = true;
     scene.add(microphone);
@@ -212,10 +187,12 @@ function StartAnimation()
     scene.add(discoFloor);
     discoFloor.scale.set(4,4,4);
     discoFloor.position.set(0,1.01,0);
+    discoFloor.name = "discoFloor";
+    
 
 
     //PIEZA DE AJEDREZ
-    let Rook = new THREE.Object3D();
+    const Rook = new THREE.Object3D();
     const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
     RookLoader.load('untitled.glb', (glb) => {
         glb.scene.traverse( function ( child ) {
@@ -232,6 +209,7 @@ function StartAnimation()
     });
     scene.add(Rook);
     Rook.position.set(-11,0.9,-11);
+    Rook.name = "rook";
 
 
     //MARIO
@@ -260,10 +238,7 @@ function StartAnimation()
 
     });
 
-    // const discoBallMat = new THREE.MeshStandardMaterial({
-    //     envMap: deku
-    // });
-
+   
     // DISCO BALL
     let discoBall = new THREE.Object3D();
     const discoBallLoader = new GLTFLoader().setPath('/3d_stuff/free_realistic_disco_ball/');
@@ -317,7 +292,9 @@ function StartAnimation()
     tableDJ.scale.set(0.01, 0.01, 0.01);
     tableDJ.name = "DJ";
 
-    let DJSet = new THREE.Object3D();
+    //let DJSet = new THREE.Object3D();
+    
+    const DJSet = new THREE.Object3D();
     const DJLoader = new GLTFLoader().setPath('/3d_stuff/dj_set/');
     DJLoader.load('scene.gltf', (gltf) => {
         gltf.scene.traverse( function ( child ) {
@@ -332,29 +309,8 @@ function StartAnimation()
     DJSet.position.set(11,1.2,-11);
     DJSet.scale.set(0.2,0.2,0.2);
     DJSet.rotation.set(0,5.8,0);
-
-    const gui = new dat.GUI();
-    const options = {
-        sphereColor: '#ffea00',
-        wireframe: false,
-        speed: 0.01,
-        angle: 0.2,
-        penumbra: 0,
-        intensity: 10000
-    };
-
-    gui.add(options, 'wireframe').onChange(function(e){
-        sphere.material.wireframe = e;
-    });
-
-    gui.addColor(options, 'sphereColor').onChange(function(e){
-        sphere.material.color.set(e);
-    });
-
-    gui.add(options, 'speed', 0, 0,1);
-    gui.add(options, 'angle', 0, 1);
-    gui.add(options, 'penumbra', 0, 1);
-    gui.add(options, 'intensity', 0, 100000);
+    DJSet.name = "MesaDj"
+    console.log(DJSet);
 
     const guiSpotLight = new dat.GUI();
   
@@ -366,33 +322,17 @@ function StartAnimation()
         color: spotlight3.color.getHex()
     };
 
-    const colorOptions4 = {
-        color: spotlight4.color.getHex()
-    };
-
-    const colorOptions5 = {
-        color: spotlight5.color.getHex()
-    };
-
+   
     const guiSpotLight2 = guiSpotLight.addFolder('spotLight2');
     const guiSpotLight3 = guiSpotLight.addFolder('spotLight3');
-    const guiSpotLight4 = guiSpotLight.addFolder('spotLight4');
-    const guiSpotLight5 = guiSpotLight.addFolder('spotLight5');
-    
+  
     guiSpotLight2.addColor(colorOptions2, 'color').onChange(() => {
         spotlight2.color.setHex(Number(colorOptions2.color.toString().replace('#','0x')))
     });
     guiSpotLight3.addColor(colorOptions3, 'color').onChange(() => {
         spotlight3.color.setHex(Number(colorOptions3.color.toString().replace('#', '0x')))
     })
-    guiSpotLight4.addColor(colorOptions4, 'color').onChange(() => {
-        spotlight4.color.setHex(Number(colorOptions4.color.toString().replace('#', '0x')))
-    })
-    guiSpotLight5.addColor(colorOptions5, 'color').onChange(() => {
-        spotlight5.color.setHex(Number(colorOptions5.color.toString().replace('#', '0x')))
-    })
-
-
+ 
     guiSpotLight2.add(spotlight2.position, 'x', -50, 50);
     guiSpotLight2.add(spotlight2.position, 'y', -50, 50);
     guiSpotLight2.add(spotlight2.position, 'z', -50, 50);
@@ -414,29 +354,6 @@ function StartAnimation()
     guiSpotLight3.add(spotlight3.target.position, 'z', -50, 50);
     guiSpotLight3.add(spotlight3, 'distance', 0, 100);
     guiSpotLight3.add(spotlight3, 'decay', 0, 4);
-
-    guiSpotLight4.add(spotlight4.position, 'x', -50, 50);
-    guiSpotLight4.add(spotlight4.position, 'y', -50, 50);
-    guiSpotLight4.add(spotlight4.position, 'z', -50, 50);
-    guiSpotLight4.add(spotlight4, 'intensity', 0, 10000);
-    guiSpotLight4.add(spotlight4, 'angle', 0, 1);
-    guiSpotLight4.add(spotlight4.target.position, 'x', -50, 50);
-    guiSpotLight4.add(spotlight4.target.position, 'y', -50, 50);
-    guiSpotLight4.add(spotlight4.target.position, 'z', -50, 50);
-    guiSpotLight4.add(spotlight4, 'distance', 0, 100);
-    guiSpotLight4.add(spotlight4, 'decay', 0, 4);
-
-    guiSpotLight5.add(spotlight5.position, 'x', -50, 50);
-    guiSpotLight5.add(spotlight5.position, 'y', -50, 50);
-    guiSpotLight5.add(spotlight5.position, 'z', -50, 50);
-    guiSpotLight5.add(spotlight5, 'intensity', 0, 10000);
-    guiSpotLight5.add(spotlight5, 'angle', 0, 1);
-    guiSpotLight5.add(spotlight5.target.position, 'x', -50, 50);
-    guiSpotLight5.add(spotlight5.target.position, 'y', -50, 50);
-    guiSpotLight5.add(spotlight5.target.position, 'z', -50, 50);
-    guiSpotLight5.add(spotlight5, 'distance', 0, 100);
-    guiSpotLight5.add(spotlight5, 'decay', 0, 4);
-
 
     let step = 0;
 
@@ -470,19 +387,13 @@ function StartAnimation()
     function animate(time){
         box.rotation.y = time / 1000;
         box.rotation.x = time / 1000;
-        step += options.speed;
         //sphere.position.y = 10 * Math.abs(Math.sin(step));
         discoBall.rotation.y = time/1000;
-        spotlight.angle = options.angle;
-        spotlight.penumbra = options.penumbra;
-        spotlight.intensity = options.intensity;
-    
-        dLightHelper.update();
-
+      
         sLightHelper2.update();
         sLightHelper3.update();
-        sLightHelper4.update();
-        sLightHelper5.update();
+        // sLightHelper4.update();
+        // sLightHelper5.update();
 
         rayCaster.setFromCamera(mousePosition, camera);
         const intersects = rayCaster.intersectObjects(scene.children);
@@ -507,7 +418,6 @@ function StartAnimation()
         });
       
         mixer.update(clock.getDelta()*1.5);
-        
         renderer.render(scene, camera);
     }
 
@@ -527,4 +437,32 @@ function PlayMusic()
 function rookSingularPosition(){
     return randInt(0,11)*2 - 11;
 }
+
+function onMouseDown(event)
+{
+    const rayCaster = new Raycaster();
+    const mousePosition = new THREE.Vector2();
+    mousePosition.x = (event.clientX / window.innerWidth) * 2 - 1,
+    mousePosition.y = -(event.clientY / window.innerHeight) * 2 + 1
+    rayCaster.setFromCamera(mousePosition, camera);
+
+    const intersections = rayCaster.intersectObjects(scene.children, true);
+    
+
+    const files = ["public/music/Shake It - Aakash Gandhi.mp3", "public/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3", "public/music/Read My Lips Time To Party - Everet Almond.mp3"];
+    if (intersections.length > 0) {
+        const object = intersections[0].object;
+    
+        if (object.parent?.parent?.name === "DJ") {
+            
+            const audio = document.getElementById('music1');
+            audio.src = files[(++indexMusic) % files.length];
+            audio.volume = 0.5;
+            audio.play();
+
+        }
+    }
+}
+
+
 
