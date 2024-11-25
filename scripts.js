@@ -14,6 +14,8 @@ import { cameraWorldMatrix } from 'three/webgpu';
 
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
+const music = document.getElementById('music1');
+
 const body = document.body;
 const renderer = new THREE.WebGLRenderer();
 renderer.shadowMap.enabled = true;
@@ -35,6 +37,20 @@ acceptButton.addEventListener('click', () => {
     StartAnimation();
     PlayMusic();
 });
+
+const songs = [
+    '/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3',
+    '/music/Read My Lips Time To Party - Everet Almond.mp3',
+    '/music/Shake It - Aakash Gandhi.mp3'
+];
+
+let currentSongIndex = 0;
+
+function cambiarCancion() {
+    currentSongIndex = (currentSongIndex + 1) % songs.length; // Cambiar al siguiente índice
+    music.src = songs[currentSongIndex]; // Actualizar el source del audio
+    music.play(); // Reproducir la canción
+}
 
 
 function StartAnimation()
@@ -217,6 +233,8 @@ function StartAnimation()
     scene.add(Rook);
     Rook.position.set(-11,0.9,-11);
 
+
+    //MARIO
     const MarioLoader = new GLTFLoader().setPath('/3d_stuff/Mario64/');
     MarioLoader.load('untitled.glb', (glb) => {
         glb.scene.traverse( function ( child ) {
@@ -263,34 +281,50 @@ function StartAnimation()
     fakeDisco.scale.set(.92, .92, .92);
     fakeDisco.name = "DISCO BALL";
 
-
-
     //ESCENARIO
     let scenario = new THREE.Object3D();
     const sceneLoader = new GLTFLoader().setPath('/3d_stuff/nightclub/');
     sceneLoader.load('scene.gltf', (gltf) => {
+        gltf.scene.traverse( function ( child ) {
+            if ( child.isMesh )
+                {
+                //child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
         scenario.add(gltf.scene);
     });
     scene.add(scenario);
-
-    //CONFIGURACIONES 2//
     scenario.scale.set(4, 4, 4);
-    //scenario.position.set(-105, -3 ,70);
+    scenario.position.set(0,0.1,0);
 
-    //GUI 
+    
+      //mesa de dj
+    let tableDJ = new THREE.Object3D();
+    const tableDJLoader = new GLTFLoader().setPath('/3d_stuff/dj_table/');
+    tableDJLoader.load('scene.gltf', (gltf) => {
+    gltf.scene.traverse( function ( child ) {
+        if ( child.isMesh )
+            {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
+    });
+        tableDJ.add(gltf.scene);
+    });
+    scene.add(tableDJ);
+    tableDJ.position.set(0,7,35);
+    tableDJ.scale.set(0.01, 0.01, 0.01);
+    tableDJ.name = "DJ";
 
     let DJSet = new THREE.Object3D();
     const DJLoader = new GLTFLoader().setPath('/3d_stuff/dj_set/');
     DJLoader.load('scene.gltf', (gltf) => {
         gltf.scene.traverse( function ( child ) {
-
             if ( child.isMesh ) {
-
                 child.castShadow = true;
                 child.receiveShadow = true;
-
             }
-
         });
         DJSet.add(gltf.scene);
     });
@@ -298,7 +332,6 @@ function StartAnimation()
     DJSet.position.set(11,1.2,-11);
     DJSet.scale.set(0.2,0.2,0.2);
     DJSet.rotation.set(0,5.8,0);
-
 
     const gui = new dat.GUI();
     const options = {
@@ -413,8 +446,23 @@ function StartAnimation()
         mousePosition.y = -(e.clientY / window.innerHeight) * 2 + 1
     });
 
-
     const rayCaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    window.addEventListener('click', function(e) {
+        mouse.x = (e.clientX / e.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / e.innerHeight) * 2 + 1;
+        rayCaster.setFromCamera(mouse, camera);
+        const intersects = rayCaster.intersectObjects(scene.children);
+    
+        // Comprobar si el objeto TableDJ fue clickeado
+        intersects.forEach((intersect) => {
+            if (intersect.object.name === 'DJ') {
+                cambiarCancion(); // Cambiar canción si se clickea el objeto
+            }
+        });
+    });
+
+    
     let micMoveRight = true;
     let micMoveForward = true;
     const clock = new THREE.Clock();
@@ -422,7 +470,6 @@ function StartAnimation()
     function animate(time){
         box.rotation.y = time / 1000;
         box.rotation.x = time / 1000;
-
         step += options.speed;
         //sphere.position.y = 10 * Math.abs(Math.sin(step));
         discoBall.rotation.y = time/1000;
@@ -442,8 +489,14 @@ function StartAnimation()
       
         intersects.forEach((intersect) => {
             if(intersect.object.name === "DISCO BALL") {
+                console.log('Hitbox');
                 discoBall.rotation.y = time/500;
             }
+
+            if(intersect.object.name === "DJ") {
+                console.log('Hitbox clickeada');
+            }
+
             if(intersect.object.name === 'memebox') {
                 intersect.object.rotation.x = time/1000;
                 intersect.object.rotation.y = time/1000;
