@@ -3,10 +3,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { GLTFLoader, SkeletonUtils } from 'three/examples/jsm/Addons.js';
 import deku from '/img/not_deku.jpg'
-import mine1 from '/img/mine1.jpg';
-import star from '/img/star2.jpg';
-import gato from '/img/no_hace_nada.jpeg';
-import fractal from '/img/fractal.jpg';
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
 import { element, Raycaster } from 'three/webgpu';
 import { ssrExportAllKey } from 'vite/runtime';
@@ -79,6 +75,7 @@ function StartAnimation()
     scene.add(gridHelper);
   
     var mixer = new THREE.AnimationMixer();
+    var mixer2 = new THREE.AnimationMixer();
   
     const sphereGeo = new THREE.SphereGeometry(4);
     const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
@@ -118,22 +115,23 @@ function StartAnimation()
     spotlight3.decay = 1;
     
     //aplicar color de fondo
-    //renderer.setClearColor(0x000055);
+    renderer.setClearColor(0x000000);
   
     //aplicar una textura de fondo estático
     const textureLoader = new THREE.TextureLoader();
-    scene.background = textureLoader.load(deku);
-  
-    //aplicar caja de fondo, espacio mundial
-    const cubeTextureLoader = new THREE.CubeTextureLoader();
-    scene.background = cubeTextureLoader.load([
-        mine1,
-        deku,
-        star,
-        star,
-        star,
-        star
-    ]);
+    //scene.background = textureLoader.load(deku);
+    
+
+    // //aplicar caja de fondo, espacio mundial
+    // const cubeTextureLoader = new THREE.CubeTextureLoader();
+    // scene.background = cubeTextureLoader.load([
+    //     mine1,
+    //     deku,
+    //     star,
+    //     star,
+    //     star,
+    //     star
+    // ]);
 
 
     //MICROFONO
@@ -154,7 +152,7 @@ function StartAnimation()
     });
     microphone.castShadow = true;
     scene.add(microphone);
-    microphone.position.set(0, 4.3, 0);
+    microphone.position.set(0, 4.3, -8);
     microphone.scale.set(2.5,2.5,2.5);
 
 
@@ -217,7 +215,7 @@ function StartAnimation()
         } );
         const model = glb.scene;
         scene.add(model);
-        model.scale.set(200,200,200);
+        model.scale.set(300,300,300);
         model.position.setY(1);
         model.position.setX(5);
         mixer = new THREE.AnimationMixer(model);
@@ -226,6 +224,31 @@ function StartAnimation()
         const action = mixer.clipAction(clip);
         action.play();
 
+    });
+
+    //CANTANTE
+    const SingerLoader = new GLTFLoader().setPath('/3d_stuff/Singer/');
+    SingerLoader.load('untitled.glb', (glb) => {
+        glb.scene.traverse( function ( child ) {
+
+            if ( child.isMesh ) {
+
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+            }
+
+        } );
+        const model = glb.scene;
+        scene.add(model);
+        model.scale.set(3,3,3);
+        model.position.setY(1);
+        model.position.setZ(-10);
+        mixer2 = new THREE.AnimationMixer(model);
+        const clips = glb.animations;
+        const clip = THREE.AnimationClip.findByName(clips, 'Armature|mixamo.com|Layer0');
+        const action = mixer2.clipAction(clip);
+        action.play();
     });
 
    
@@ -240,7 +263,7 @@ function StartAnimation()
     discoBall.scale.set(0.3,0.3,0.3);
 
     const fakeDiscoG = new THREE.SphereGeometry(3);
-    const fakeDisco = new THREE.Mesh(fakeDiscoG, new THREE.MeshPhongMaterial({visible: true, envMap: textureLoader.load(deku), roughness: 0, metalness: 1, shininess: 100}));
+    const fakeDisco = new THREE.Mesh(fakeDiscoG, new THREE.MeshPhongMaterial({visible: false, envMap: textureLoader.load(deku), roughness: 0, metalness: 1, shininess: 100}));
     scene.add(fakeDisco);
     fakeDisco.position.set(5,15,5);
     fakeDisco.scale.set(.92, .92, .92);
@@ -264,7 +287,7 @@ function StartAnimation()
     scenario.position.set(0,0.1,0);
 
     
-      //mesa de dj
+    //mesa de dj
     let tableDJ = new THREE.Object3D();
     const tableDJLoader = new GLTFLoader().setPath('/3d_stuff/dj_table/');
     tableDJLoader.load('scene.gltf', (gltf) => {
@@ -373,6 +396,7 @@ function StartAnimation()
     let micMoveRight = true;
     let micMoveForward = true;
     const clock = new THREE.Clock();
+    const clock2 = new THREE.Clock();
 
     function animate(time){
         box.rotation.y = time / 1000;
@@ -419,15 +443,16 @@ function StartAnimation()
             nextColorIndex = (nextColorIndex + 1) % colors1.length;  // Ciclar entre los colores
             transitionTime = 0;
         }
+        Rook.position.setZ(randInt(0,11)*2 - 11);
 
       
         mixer.update(clock.getDelta()*1.5);
+        mixer2.update(clock2.getDelta()*1.5);
         renderer.render(scene, camera);
     }
 
     renderer.setAnimationLoop(animate);
 }
-
 
 function PlayMusic()
 {
@@ -435,11 +460,6 @@ function PlayMusic()
     audio.volume = 0.5;
     console.log(audio);
     audio.play();
-}
-
-
-function rookSingularPosition(){
-    return randInt(0,11)*2 - 11;
 }
 
 function onMouseDown(event)
@@ -454,9 +474,9 @@ function onMouseDown(event)
 
     const songs = 
     [
-        "public/music/Shake It - Aakash Gandhi.mp3",
-        "public/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3",
-        "public/music/Read My Lips Time To Party - Everet Almond.mp3"
+        "/music/Shake It - Aakash Gandhi.mp3",
+        "/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3",
+        "/music/Read My Lips Time To Party - Everet Almond.mp3"
     ];
 
     if (intersections.length > 0) {
@@ -469,6 +489,3 @@ function onMouseDown(event)
         }
     }
 }
-
-
-
