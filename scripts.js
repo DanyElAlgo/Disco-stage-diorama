@@ -31,7 +31,6 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 document.addEventListener('mousedown', onMouseDown);
 
-
 acceptButton.addEventListener('click', () => {
 
     //Eliminamos por medio de hardcoding el estilo del body a uno por defecto
@@ -49,19 +48,7 @@ acceptButton.addEventListener('click', () => {
     PlayMusic();
 });
 
-const songs = [
-    '/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3',
-    '/music/Read My Lips Time To Party - Everet Almond.mp3',
-    '/music/Shake It - Aakash Gandhi.mp3'
-];
-
 let currentSongIndex = 0;
-
-function cambiarCancion() {
-    currentSongIndex = (currentSongIndex + 1) % songs.length; // Cambiar al siguiente índice
-    music.src = songs[currentSongIndex]; // Actualizar el source del audio
-    music.play(); // Reproducir la canción
-}
 
 
 function StartAnimation()
@@ -102,18 +89,21 @@ function StartAnimation()
     sphere.name = "BALL";
 
 
-    const ambientLight = new THREE.AmbientLight(0x333333);
+    const ambientLight = new THREE.AmbientLight(0x333333, 80);
     scene.add(ambientLight);
 
     //Spotlights
-    const spotlight2 = new THREE.SpotLight(0xFFFFFF, 1000);
-    const spotlight3 = new THREE.SpotLight(0xFFFFFF, 1000);
+    const spotlight2 = new THREE.SpotLight(0x26986f, 2251, 0, 0.5);
+    const spotlight3 = new THREE.SpotLight(0xf2c238, 5000, 0, 0.4);
    
     scene.add(spotlight2);
     scene.add(spotlight3);
    
-    spotlight2.position.set(0, 10, 0);
-    spotlight3.position.set(0, 15, 0);
+    spotlight2.position.set(-15.5, 19, 0);
+    spotlight3.position.set(9, 23, 17);
+
+    spotlight2.target.position.set(-3, 0, 0);
+    spotlight3.target.position.set(2, 4, 6);
    
     const sLightHelper2 = new THREE.SpotLightHelper(spotlight2, 0xFF0000);
     const sLightHelper3 = new THREE.SpotLightHelper(spotlight3, 0x00FF00);
@@ -124,7 +114,7 @@ function StartAnimation()
     spotlight2.castShadow = true;
     spotlight3.castShadow = true;
    
-    spotlight2.decay = 1;
+    spotlight2.decay = 0.7;
     spotlight3.decay = 1;
     
     //aplicar color de fondo
@@ -292,6 +282,13 @@ function StartAnimation()
     tableDJ.scale.set(0.01, 0.01, 0.01);
     tableDJ.name = "DJ";
 
+    const hitbox = new THREE.Mesh(
+        new THREE.BoxGeometry(5, 5, 5), // Tamaño de la hitbox
+        new THREE.MeshBasicMaterial({ visible: false }) // Material invisible
+      );
+      tableDJ.add(hitbox); // Agregar la hitbox al objeto principal
+      hitbox.name = 'tableDJHitbox';
+
     //let DJSet = new THREE.Object3D();
     
     const DJSet = new THREE.Object3D();
@@ -310,7 +307,6 @@ function StartAnimation()
     DJSet.scale.set(0.2,0.2,0.2);
     DJSet.rotation.set(0,5.8,0);
     DJSet.name = "MesaDj"
-    console.log(DJSet);
 
     const guiSpotLight = new dat.GUI();
   
@@ -358,32 +354,17 @@ function StartAnimation()
     let step = 0;
 
     const mousePosition = new THREE.Vector2();
+    const rayCaster = new THREE.Raycaster();
+
     window.addEventListener('mousemove', function(e){
         mousePosition.x = (e.clientX / window.innerWidth) * 2 - 1,
         mousePosition.y = -(e.clientY / window.innerHeight) * 2 + 1
     });
 
-    const rayCaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    window.addEventListener('click', function(e) {
-        mouse.x = (e.clientX / e.innerWidth) * 2 - 1;
-        mouse.y = -(e.clientY / e.innerHeight) * 2 + 1;
-        rayCaster.setFromCamera(mouse, camera);
-        const intersects = rayCaster.intersectObjects(scene.children);
-    
-        // Comprobar si el objeto TableDJ fue clickeado
-        intersects.forEach((intersect) => {
-            if (intersect.object.name === 'DJ') {
-                cambiarCancion(); // Cambiar canción si se clickea el objeto
-            }
-        });
-    });
-
-    
     let micMoveRight = true;
     let micMoveForward = true;
     const clock = new THREE.Clock();
-   
+
     function animate(time){
         box.rotation.y = time / 1000;
         box.rotation.x = time / 1000;
@@ -400,12 +381,7 @@ function StartAnimation()
       
         intersects.forEach((intersect) => {
             if(intersect.object.name === "DISCO BALL") {
-                console.log('Hitbox');
                 discoBall.rotation.y = time/500;
-            }
-
-            if(intersect.object.name === "DJ") {
-                console.log('Hitbox clickeada');
             }
 
             if(intersect.object.name === 'memebox') {
@@ -447,19 +423,21 @@ function onMouseDown(event)
     rayCaster.setFromCamera(mousePosition, camera);
 
     const intersections = rayCaster.intersectObjects(scene.children, true);
-    
 
-    const files = ["public/music/Shake It - Aakash Gandhi.mp3", "public/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3", "public/music/Read My Lips Time To Party - Everet Almond.mp3"];
+    const songs = 
+    [
+        "public/music/Shake It - Aakash Gandhi.mp3",
+        "public/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3",
+        "public/music/Read My Lips Time To Party - Everet Almond.mp3"
+    ];
+
     if (intersections.length > 0) {
         const object = intersections[0].object;
-    
-        if (object.parent?.parent?.name === "DJ") {
-            
+        if (object.parent?.name === "Cube") {
             const audio = document.getElementById('music1');
-            audio.src = files[(++indexMusic) % files.length];
+            audio.src = songs[(++indexMusic) % songs.length];
             audio.volume = 0.5;
             audio.play();
-
         }
     }
 }
