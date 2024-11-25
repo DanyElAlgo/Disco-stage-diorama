@@ -8,7 +8,7 @@ import star from '/img/star2.jpg';
 import gato from '/img/no_hace_nada.jpeg';
 import fractal from '/img/fractal.jpg';
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
-import { element } from 'three/webgpu';
+import { element, Raycaster } from 'three/webgpu';
 import { ssrExportAllKey } from 'vite/runtime';
 import { cameraWorldMatrix } from 'three/webgpu';
 
@@ -16,8 +16,19 @@ const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
 const body = document.body;
 const renderer = new THREE.WebGLRenderer();
+const rayCaster = new THREE.Raycaster();
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const orbit = new OrbitControls(camera, renderer.domElement);
+let indexMusic = 0;
+
+
+
 renderer.shadowMap.enabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
+
+document.addEventListener('mousedown', onMouseDown);
+
 
 acceptButton.addEventListener('click', () => {
 
@@ -40,9 +51,8 @@ acceptButton.addEventListener('click', () => {
 function StartAnimation()
 {
     document.body.appendChild(renderer.domElement);
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const orbit = new OrbitControls(camera, renderer.domElement);
+    
+
 
     const axesHelper = new THREE.AxesHelper(5);
     scene.add(axesHelper);
@@ -196,10 +206,12 @@ function StartAnimation()
     scene.add(discoFloor);
     discoFloor.scale.set(4,4,4);
     discoFloor.position.set(0,1.01,0);
+    discoFloor.name = "discoFloor";
+    
 
 
     //PIEZA DE AJEDREZ
-    let Rook = new THREE.Object3D();
+    const Rook = new THREE.Object3D();
     const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
     RookLoader.load('untitled.glb', (glb) => {
         glb.scene.traverse( function ( child ) {
@@ -216,6 +228,7 @@ function StartAnimation()
     });
     scene.add(Rook);
     Rook.position.set(-11,0.9,-11);
+    Rook.name = "rook";
 
     const MarioLoader = new GLTFLoader().setPath('/3d_stuff/Mario64/');
     MarioLoader.load('untitled.glb', (glb) => {
@@ -277,7 +290,7 @@ function StartAnimation()
     scenario.scale.set(4, 4, 4);
     //scenario.position.set(-105, -3 ,70);
     
-    let DJSet = new THREE.Object3D();
+    const DJSet = new THREE.Object3D();
     const DJLoader = new GLTFLoader().setPath('/3d_stuff/dj_set/');
     DJLoader.load('scene.gltf', (gltf) => {
         gltf.scene.traverse( function ( child ) {
@@ -296,30 +309,8 @@ function StartAnimation()
     DJSet.position.set(11,1.2,-11);
     DJSet.scale.set(0.2,0.2,0.2);
     DJSet.rotation.set(0,5.8,0);
-
-
-    // const gui = new dat.GUI();
-    // const options = {
-    //     sphereColor: '#ffea00',
-    //     wireframe: false,
-    //     speed: 0.01,
-    //     angle: 0.2,
-    //     penumbra: 0,
-    //     intensity: 10000
-    // };
-
-    // gui.add(options, 'wireframe').onChange(function(e){
-    //     sphere.material.wireframe = e;
-    // });
-
-    // gui.addColor(options, 'sphereColor').onChange(function(e){
-    //     sphere.material.color.set(e);
-    // });
-
-    // gui.add(options, 'speed', 0, 0,1);
-    // gui.add(options, 'angle', 0, 1);
-    // gui.add(options, 'penumbra', 0, 1);
-    // gui.add(options, 'intensity', 0, 100000);
+    DJSet.name = "MesaDj"
+    console.log(DJSet);
 
     const guiSpotLight = new dat.GUI();
   
@@ -412,24 +403,17 @@ function StartAnimation()
     });
 
 
-    const rayCaster = new THREE.Raycaster();
-    let micMoveRight = true;
-    let micMoveForward = true;
+    
+    // let micMoveRight = true;
+    // let micMoveForward = true;
     const clock = new THREE.Clock();
    
     function animate(time){
         box.rotation.y = time / 1000;
         box.rotation.x = time / 1000;
 
-        // step += options.speed;
-        //sphere.position.y = 10 * Math.abs(Math.sin(step));
         discoBall.rotation.y = time/1000;
-        // spotlight.angle = options.angle;
-        // spotlight.penumbra = options.penumbra;
-        // spotlight.intensity = options.intensity;
-    
-        // dLightHelper.update();
-
+      
         sLightHelper2.update();
         sLightHelper3.update();
         // sLightHelper4.update();
@@ -452,7 +436,7 @@ function StartAnimation()
         });
       
         mixer.update(clock.getDelta()*1.5);
-        
+        //status.update();
         renderer.render(scene, camera);
     }
 
@@ -472,4 +456,36 @@ function PlayMusic()
 function rookSingularPosition(){
     return randInt(0,11)*2 - 11;
 }
+
+function onMouseDown(event)
+{
+    const rayCaster = new Raycaster();
+    const mousePosition = new THREE.Vector2();
+    mousePosition.x = (event.clientX / window.innerWidth) * 2 - 1,
+    mousePosition.y = -(event.clientY / window.innerHeight) * 2 + 1
+    rayCaster.setFromCamera(mousePosition, camera);
+
+    const intersections = rayCaster.intersectObjects(scene.children, true);
+    
+
+    const files = ["public/music/Shake It - Aakash Gandhi.mp3", "public/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3", "public/music/Read My Lips Time To Party - Everet Almond.mp3"];
+    if (intersections.length > 0) {
+        const object = intersections[0].object;
+        console.log("Objeto detectado:", object.name);
+        console.log(object);
+       
+        if (object.parent?.parent?.name === "DJ") {
+            console.log("¡Haz clic en el objeto padre (MesaDj)!");
+            const audio = document.getElementById('music1');
+            audio.src = files[(++indexMusic) % files.length];
+            audio.volume = 0.5;
+            audio.play();
+
+        } else {
+            console.log("Hiciste clic en un hijo, no en el padre.");
+        }
+    }
+}
+
+
 
