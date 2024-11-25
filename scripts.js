@@ -484,7 +484,7 @@ function onMouseDown(event)
         if (object.parent?.name === "Cube") {
             const audio = document.getElementById('music1');
             audio.src = songs[(++indexMusic) % songs.length];
-            audio.volume = 0.5;
+            audio.volume = 0.05;
             audio.play();
         }
     }
