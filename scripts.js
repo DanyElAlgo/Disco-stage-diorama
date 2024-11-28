@@ -7,6 +7,7 @@ import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
 import { element, Raycaster } from 'three/webgpu';
 import { ssrExportAllKey } from 'vite/runtime';
 import { cameraWorldMatrix } from 'three/webgpu';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
@@ -18,7 +19,7 @@ const rayCaster = new THREE.Raycaster();
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 const orbit = new OrbitControls(camera, renderer.domElement);
-let indexMusic = 0;
+let indexMusic = 1;
 
 
 
@@ -333,7 +334,9 @@ function StartAnimation()
 
     const guiSpotLight = new dat.GUI();
     const guiVolume = new dat.GUI();
-  
+    const stats = new Stats();
+    document.body.appendChild(stats.dom);
+
     const colorOptions2 = {
         color: spotlight2.color.getHex()
     };
@@ -453,6 +456,7 @@ function StartAnimation()
       
         mixer.update(clock.getDelta()*1.5);
         mixer2.update(clock2.getDelta()*1.5);
+        stats.update();
         renderer.render(scene, camera);
     }
 
@@ -490,7 +494,8 @@ function onMouseDown(event)
         const object = intersections[0].object;
         if (object.parent?.name === "Cube") {
             const audio = document.getElementById('music1');
-            audio.src = songs[(++indexMusic) % songs.length];
+            audio.src = songs[(indexMusic) % songs.length];
+            indexMusic += 1;
             audio.volume = 0.5;
             audio.play();
         }
