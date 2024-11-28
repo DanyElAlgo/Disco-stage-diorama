@@ -332,6 +332,7 @@ function StartAnimation()
     DJSet.name = "MesaDj"
 
     const guiSpotLight = new dat.GUI();
+    const guiVolume = new dat.GUI();
   
     const colorOptions2 = {
         color: spotlight2.color.getHex()
@@ -344,6 +345,10 @@ function StartAnimation()
    
     const guiSpotLight2 = guiSpotLight.addFolder('spotLight2');
     const guiSpotLight3 = guiSpotLight.addFolder('spotLight3');
+
+
+    const audio = document.getElementById('music1');
+    guiVolume.add(audio, 'volume', 0, 1);
   
     guiSpotLight2.addColor(colorOptions2, 'color').onChange(() => {
         spotlight2.color.setHex(Number(colorOptions2.color.toString().replace('#','0x')))
@@ -458,7 +463,6 @@ function PlayMusic()
 {
     const audio = document.getElementById('music1');
     audio.volume = 0.5;
-    console.log(audio);
     audio.play();
 }
 
@@ -488,7 +492,6 @@ function onMouseDown(event)
             const audio = document.getElementById('music1');
             audio.src = songs[(++indexMusic) % songs.length];
             audio.volume = 0.5;
-            console.log(audio);
             audio.play();
         }
     }
