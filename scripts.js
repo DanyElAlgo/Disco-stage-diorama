@@ -133,11 +133,12 @@ function StartAnimation()
     //     star
     // ]);
 
+    const loader = new GLTFLoader();
 
     //MICROFONO
     let microphone = new THREE.Object3D();
-    const micLoader = new GLTFLoader().setPath('/3d_stuff/classic_microphone/');
-    micLoader.load('scene.gltf', (gltf) => {
+    loader.setPath('/3d_stuff/classic_microphone/');
+    loader.load('scene.gltf', (gltf) => {
         gltf.scene.traverse( function ( child ) {
 
             if ( child.isMesh ) {
@@ -158,8 +159,8 @@ function StartAnimation()
 
     // DISCO FLOOR
     let discoFloor = new THREE.Object3D();
-    const floorLoader = new GLTFLoader().setPath('/3d_stuff/animated_dance_floor_neon_lights/');
-    floorLoader.load('scene.gltf', (gltf) => {
+    loader.setPath('/3d_stuff/animated_dance_floor_neon_lights/');
+    loader.load('scene.gltf', (gltf) => {
         gltf.scene.traverse( function ( child ) {
 
             if ( child.isMesh ) {
@@ -181,8 +182,8 @@ function StartAnimation()
 
     //PIEZA DE AJEDREZ
     const Rook = new THREE.Object3D();
-    const RookLoader = new GLTFLoader().setPath('/3d_stuff/classic_chess_rook_3d_model/');
-    RookLoader.load('untitled.glb', (glb) => {
+    loader.setPath('/3d_stuff/classic_chess_rook_3d_model/');
+    loader.load('untitled.glb', (glb) => {
         glb.scene.traverse( function ( child ) {
 
             if ( child.isMesh ) {
@@ -201,8 +202,8 @@ function StartAnimation()
 
 
     //MARIO
-    const MarioLoader = new GLTFLoader().setPath('/3d_stuff/Mario64/');
-    MarioLoader.load('untitled.glb', (glb) => {
+    loader.setPath('/3d_stuff/Mario64/');
+    loader.load('untitled.glb', (glb) => {
         glb.scene.traverse( function ( child ) {
 
             if ( child.isMesh ) {
@@ -227,8 +228,8 @@ function StartAnimation()
     });
 
     //CANTANTE
-    const SingerLoader = new GLTFLoader().setPath('/3d_stuff/Singer/');
-    SingerLoader.load('untitled.glb', (glb) => {
+    loader.setPath('/3d_stuff/Singer/');
+    loader.load('untitled.glb', (glb) => {
         glb.scene.traverse( function ( child ) {
 
             if ( child.isMesh ) {
@@ -254,25 +255,25 @@ function StartAnimation()
    
     // DISCO BALL
     let discoBall = new THREE.Object3D();
-    const discoBallLoader = new GLTFLoader().setPath('/3d_stuff/free_realistic_disco_ball/');
-    discoBallLoader.load('scene.gltf', (gltf) => {
+    loader.setPath('/3d_stuff/free_realistic_disco_ball/');
+    loader.load('scene.gltf', (gltf) => {
         discoBall.add(gltf.scene);
     });
     scene.add(discoBall);
-    discoBall.position.set(5,15,5);
+    discoBall.position.set(0,15,0);
     discoBall.scale.set(0.3,0.3,0.3);
 
     const fakeDiscoG = new THREE.SphereGeometry(3);
     const fakeDisco = new THREE.Mesh(fakeDiscoG, new THREE.MeshPhongMaterial({visible: false, envMap: textureLoader.load(deku), roughness: 0, metalness: 1, shininess: 100}));
     scene.add(fakeDisco);
-    fakeDisco.position.set(5,15,5);
+    fakeDisco.position.set(0,15,0);
     fakeDisco.scale.set(.92, .92, .92);
     fakeDisco.name = "DISCO BALL";
 
     //ESCENARIO
     let scenario = new THREE.Object3D();
-    const sceneLoader = new GLTFLoader().setPath('/3d_stuff/nightclub/');
-    sceneLoader.load('scene.gltf', (gltf) => {
+    loader.setPath('/3d_stuff/nightclub/');
+    loader.load('scene.gltf', (gltf) => {
         gltf.scene.traverse( function ( child ) {
             if ( child.isMesh )
                 {
@@ -289,8 +290,8 @@ function StartAnimation()
     
     //mesa de dj
     let tableDJ = new THREE.Object3D();
-    const tableDJLoader = new GLTFLoader().setPath('/3d_stuff/dj_table/');
-    tableDJLoader.load('scene.gltf', (gltf) => {
+    loader.setPath('/3d_stuff/dj_table/');
+    loader.load('scene.gltf', (gltf) => {
     gltf.scene.traverse( function ( child ) {
         if ( child.isMesh )
             {
@@ -312,11 +313,10 @@ function StartAnimation()
       tableDJ.add(hitbox); // Agregar la hitbox al objeto principal
       hitbox.name = 'tableDJHitbox';
 
-    //let DJSet = new THREE.Object3D();
     
     const DJSet = new THREE.Object3D();
-    const DJLoader = new GLTFLoader().setPath('/3d_stuff/dj_set/');
-    DJLoader.load('scene.gltf', (gltf) => {
+    loader.setPath('/3d_stuff/dj_set/');
+    loader.load('scene.gltf', (gltf) => {
         gltf.scene.traverse( function ( child ) {
             if ( child.isMesh ) {
                 child.castShadow = true;
@@ -476,7 +476,10 @@ function onMouseDown(event)
     [
         "/music/Shake It - Aakash Gandhi.mp3",
         "/music/Cumbia del Norte - Jovenes Viejos _ Cumbia Deli.mp3",
-        "/music/Read My Lips Time To Party - Everet Almond.mp3"
+        "/music/Read My Lips Time To Party - Everet Almond.mp3",
+        "/music/I Am All of Me - Disco Ver - idle.mp3",
+        "/music/Six Feet Thunder (5-3) - DannyB.mp3",
+        "/music/Thrills at Night - Paper Mario The Origami King OST.mp3"
     ];
 
     if (intersections.length > 0) {
@@ -484,7 +487,8 @@ function onMouseDown(event)
         if (object.parent?.name === "Cube") {
             const audio = document.getElementById('music1');
             audio.src = songs[(++indexMusic) % songs.length];
-            audio.volume = 0.05;
+            audio.volume = 0.5;
+            console.log(audio);
             audio.play();
         }
     }
