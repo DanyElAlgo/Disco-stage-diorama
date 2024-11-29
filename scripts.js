@@ -52,9 +52,6 @@ function StartAnimation()
 {
     document.body.appendChild(renderer.domElement);
 
-    const axesHelper = new THREE.AxesHelper(5);
-    scene.add(axesHelper);
-
     camera.position.set(0,20,30);
     orbit.update();
 
@@ -179,6 +176,7 @@ function StartAnimation()
 
 
     // DISCO FLOOR
+    let mixer3 = new THREE.AnimationMixer();
     let discoFloor = new THREE.Object3D();
     loader.setPath('/3d_stuff/animated_dance_floor_neon_lights/');
     loader.load('scene.gltf', (gltf) => {
@@ -193,13 +191,24 @@ function StartAnimation()
 
         } );
         discoFloor.add(gltf.scene);
+        mixer3 = new THREE.AnimationMixer(gltf.scene);
+        const clips = gltf.animations;
+        debugger;
+        const clip1 = THREE.AnimationClip.findByName(clips, 'Animation');
+        const action1 = mixer3.clipAction(clip1);
+
+        action1.play();
+        // action1.loop = THREE.LoopOnce;
+     
+        // mixer3.addEventListener('finished', function(e){
+        //     action1.reset();
+        //     action1.play();
+        // });
     });
     scene.add(discoFloor);
-    discoFloor.scale.set(4,4,4);
+    discoFloor.scale.set(4,1.9,4);
     discoFloor.position.set(0,1.01,0);
     discoFloor.name = "discoFloor";
-    
-
 
     //PIEZA DE AJEDREZ
     const Rook = new THREE.Object3D();
@@ -330,27 +339,9 @@ function StartAnimation()
     const hitbox = new THREE.Mesh(
         new THREE.BoxGeometry(5, 5, 5), // Tamaño de la hitbox
         new THREE.MeshBasicMaterial({ visible: false }) // Material invisible
-      );
-      tableDJ.add(hitbox); // Agregar la hitbox al objeto principal
-      hitbox.name = 'tableDJHitbox';
-
-    
-    const DJSet = new THREE.Object3D();
-    loader.setPath('/3d_stuff/dj_set/');
-    loader.load('scene.gltf', (gltf) => {
-        gltf.scene.traverse( function ( child ) {
-            if ( child.isMesh ) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        });
-        DJSet.add(gltf.scene);
-    });
-    scene.add(DJSet);
-    DJSet.position.set(11,1.2,-11);
-    DJSet.scale.set(0.2,0.2,0.2);
-    DJSet.rotation.set(0,5.8,0);
-    DJSet.name = "MesaDj"
+    );
+    tableDJ.add(hitbox); // Agregar la hitbox al objeto principal
+    hitbox.name = 'tableDJHitbox';
 
     const guiSpotLight = new dat.GUI();
     const guiVolume = new dat.GUI();
@@ -433,6 +424,7 @@ function StartAnimation()
     let micMoveForward = true;
     const clock = new THREE.Clock();
     const clock2 = new THREE.Clock();
+    const clock3 = new THREE.Clock();
 
     function animate(time){
         box.rotation.y = time / 1000;
@@ -484,6 +476,7 @@ function StartAnimation()
       
         mixer.update(clock.getDelta()*1.5);
         mixer2.update(clock2.getDelta()*1.5);
+        mixer3.update(clock3.getDelta());
         stats.update();
         renderer.render(scene, camera);
     }
