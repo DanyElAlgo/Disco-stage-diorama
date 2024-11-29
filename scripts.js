@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { GLTFLoader, SkeletonUtils } from 'three/examples/jsm/Addons.js';
+import { GLTFLoader, RectAreaLightHelper, SkeletonUtils } from 'three/examples/jsm/Addons.js';
 import deku from '/img/not_deku.jpg'
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
-import { element, Raycaster } from 'three/webgpu';
+import { element, Raycaster, RectAreaLight } from 'three/webgpu';
 import { ssrExportAllKey } from 'vite/runtime';
 import { cameraWorldMatrix } from 'three/webgpu';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
@@ -89,6 +89,26 @@ function StartAnimation()
 
     const ambientLight = new THREE.AmbientLight(0x333333, 80);
     scene.add(ambientLight);
+
+    //RectAreaLight
+
+    const rectLight = new THREE.RectAreaLight(0xFFFFFF, 1000, 3.1, 1.5);
+    rectLight.position.set(-1.82, 11.28, 34.88);
+    rectLight.lookAt(-1.82, 11.28, 40);
+
+    const rectLight2 = new THREE.RectAreaLight(0xFFFFFF, 1000, 3.1, 1.5);
+    rectLight2.position.set(1.83, 11.28, 34.88);
+    rectLight2.lookAt(1.83, 11.28, 40);
+
+    scene.add(rectLight);
+    scene.add(rectLight2);
+
+    const rectLightHelper = new RectAreaLightHelper(rectLight);
+    const rectLightHelper2 = new RectAreaLightHelper(rectLight2);
+
+    rectLight.add(rectLightHelper);
+    rectLight2.add(rectLightHelper2);
+
 
     //Spotlights
     const spotlight2 = new THREE.SpotLight(0x26986f, 2251, 0, 0.5);
@@ -348,7 +368,7 @@ function StartAnimation()
    
     const guiSpotLight2 = guiSpotLight.addFolder('spotLight2');
     const guiSpotLight3 = guiSpotLight.addFolder('spotLight3');
-
+    const guiRecAreaLight = guiSpotLight.addFolder('AreaLight');
 
     const audio = document.getElementById('music1');
     guiVolume.add(audio, 'volume', 0, 1);
@@ -358,7 +378,15 @@ function StartAnimation()
     });
     guiSpotLight3.addColor(colorOptions3, 'color').onChange(() => {
         spotlight3.color.setHex(Number(colorOptions3.color.toString().replace('#', '0x')))
-    })
+    });
+
+
+    guiRecAreaLight.add(rectLight2.position, 'x', -50, 50, 0.01);
+    guiRecAreaLight.add(rectLight2.position, 'y', -50, 50, 0.01);
+    guiRecAreaLight.add(rectLight2.position, 'z', -50, 50, 0.01);
+    guiRecAreaLight.add(rectLight2, 'width', 0.1, 5, 0.1);
+    guiRecAreaLight.add(rectLight2, 'height', 0.1, 5, 0.1);
+
  
     guiSpotLight2.add(spotlight2.position, 'x', -50, 50);
     guiSpotLight2.add(spotlight2.position, 'y', -50, 50);
@@ -494,10 +522,18 @@ function onMouseDown(event)
         const object = intersections[0].object;
         if (object.parent?.name === "Cube") {
             const audio = document.getElementById('music1');
+            console.log(songs);
+            console.log(indexMusic);
             audio.src = songs[(indexMusic) % songs.length];
             indexMusic += 1;
-            audio.volume = 0.5;
             audio.play();
         }
     }
 }
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
