@@ -8,6 +8,10 @@ import { element, Raycaster, RectAreaLight } from 'three/webgpu';
 import { ssrExportAllKey } from 'vite/runtime';
 import { cameraWorldMatrix } from 'three/webgpu';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
+import idle_front from '/img/Merchant idle front.png';
+import idle_back from '/img/Merchant idle back.png';
+//import sing_front from '/img/Merchant sing front.png';
+//import sing_back from '/img/Merchant sing back.png';
 
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
@@ -46,7 +50,7 @@ acceptButton.addEventListener('click', () => {
 });
 
 let currentSongIndex = 0;
-
+//TODO: ????????????????????????????????
 
 function StartAnimation()
 {
@@ -58,16 +62,6 @@ function StartAnimation()
     const boxGeometry = new THREE.BoxGeometry();
     const boxMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
     const box = new THREE.Mesh(boxGeometry, boxMaterial)
-
-    // scene.add(box);
-    const planeGeometry = new THREE.PlaneGeometry(30,30);
-    const planeMat = new THREE.MeshStandardMaterial({color: 0xcccccc, side: THREE.DoubleSide});
-    const plane = new THREE.Mesh(planeGeometry, planeMat);
-
-    plane.rotation.x = -0.5 * Math.PI;
-
-    plane.receiveShadow = true;
-    scene.add(plane);
 
     const gridHelper = new THREE.GridHelper(30);
     scene.add(gridHelper);
@@ -137,19 +131,7 @@ function StartAnimation()
   
     //aplicar una textura de fondo estático
     const textureLoader = new THREE.TextureLoader();
-    //scene.background = textureLoader.load(deku);
-    
-
-    // //aplicar caja de fondo, espacio mundial
-    // const cubeTextureLoader = new THREE.CubeTextureLoader();
-    // scene.background = cubeTextureLoader.load([
-    //     mine1,
-    //     deku,
-    //     star,
-    //     star,
-    //     star,
-    //     star
-    // ]);
+    //scene.background = textureLoader.load(idle_front);
 
     const loader = new GLTFLoader();
 
@@ -193,7 +175,6 @@ function StartAnimation()
         discoFloor.add(gltf.scene);
         mixer3 = new THREE.AnimationMixer(gltf.scene);
         const clips = gltf.animations;
-        debugger;
         const clip1 = THREE.AnimationClip.findByName(clips, 'Animation');
         const action1 = mixer3.clipAction(clip1);
 
@@ -273,8 +254,7 @@ function StartAnimation()
         const model = glb.scene;
         scene.add(model);
         model.scale.set(3,3,3);
-        model.position.setY(1);
-        model.position.setZ(-10);
+        model.position.set(-4,1,5);
         mixer2 = new THREE.AnimationMixer(model);
         const clips = glb.animations;
         const clip = THREE.AnimationClip.findByName(clips, 'Armature|mixamo.com|Layer0');
@@ -342,6 +322,53 @@ function StartAnimation()
     );
     tableDJ.add(hitbox); // Agregar la hitbox al objeto principal
     hitbox.name = 'tableDJHitbox';
+
+    var merchantIdleFrontTexture = textureLoader.load(idle_front);
+    merchantIdleFrontTexture.magFilter = THREE.NearestFilter;
+    merchantIdleFrontTexture.minFilter = THREE.NearestFilter;
+	let merchantIdleFrontClock = new TextureAnimator( merchantIdleFrontTexture, 4, 1, 4, 75 ); // texture, #horiz, #vert, #total, duration.
+	var merchantIdleFrontMaterial = new THREE.MeshBasicMaterial( { map: merchantIdleFrontTexture, side:THREE.FrontSide, transparent: true } );
+	var merchantIdleFrontGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
+	var merchantIdleFront = new THREE.Mesh(merchantIdleFrontGeometry, merchantIdleFrontMaterial);
+	merchantIdleFront.position.set(0, 3.5, -10);
+    merchantIdleFront.scale.set(.1,.1,.1);
+	scene.add(merchantIdleFront);
+
+    var merchantIdleBackTexture = textureLoader.load(idle_back);
+    merchantIdleBackTexture.magFilter = THREE.NearestFilter;
+    merchantIdleBackTexture.minFilter = THREE.NearestFilter;
+	let merchantIdleBackClock = new TextureAnimator( merchantIdleBackTexture, 4, 1, 4, 75 ); // texture, #horiz, #vert, #total, duration.
+	var merchantIdleBackMaterial = new THREE.MeshBasicMaterial( { map: merchantIdleBackTexture, side:THREE.BackSide, transparent: true } );
+	var merchantIdleBackGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
+	var merchantIdleBack = new THREE.Mesh(merchantIdleBackGeometry, merchantIdleBackMaterial);
+	merchantIdleBack.position.set(0, 3.5, -10);
+    merchantIdleBack.scale.set(-0.1,.1,.1);
+	scene.add(merchantIdleBack);
+
+    //TODO: Implementar esto para ser dinámico
+/*
+    var merchantSingFrontTexture = textureLoader.load(sing_front);
+    merchantSingFrontTexture.magFilter = THREE.NearestFilter;
+    merchantSingFrontTexture.minFilter = THREE.NearestFilter;
+	let merchantSingFrontClock = new TextureAnimator( merchantSingFrontTexture, 8, 1, 8, 75 ); // texture, #horiz, #vert, #total, duration.
+	var merchantSingFrontMaterial = new THREE.MeshBasicMaterial( { map: merchantSingFrontTexture, side:THREE.FrontSide, transparent: true } );
+	var merchantSingFrontGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
+	var merchantSingFront = new THREE.Mesh(merchantSingFrontGeometry, merchantSingFrontMaterial);
+	merchantSingFront.position.set(0, 3.5, -10);
+    merchantSingFront.scale.set(.1,.1,.1);
+	scene.add(merchantSingFront);
+
+    var merchantSingBackTexture = textureLoader.load(sing_back);
+    merchantSingBackTexture.magFilter = THREE.NearestFilter;
+    merchantSingBackTexture.minFilter = THREE.NearestFilter;
+	let merchantSingBackClock = new TextureAnimator( merchantSingBackTexture, 8, 1, 8, 75 ); // texture, #horiz, #vert, #total, duration.
+	var merchantSingBackMaterial = new THREE.MeshBasicMaterial( { map: merchantSingBackTexture, side:THREE.BackSide, transparent: true } );
+	var merchantSingBackGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
+	var merchantSingBack = new THREE.Mesh(merchantSingBackGeometry, merchantSingBackMaterial);
+	merchantSingBack.position.set(0, 3.5, -10);
+    merchantSingBack.scale.set(-0.1,.1,.1);
+	scene.add(merchantSingBack);
+*/
 
     const guiSpotLight = new dat.GUI();
     const guiVolume = new dat.GUI();
@@ -425,6 +452,8 @@ function StartAnimation()
     const clock = new THREE.Clock();
     const clock2 = new THREE.Clock();
     const clock3 = new THREE.Clock();
+    const clock4 = new THREE.Clock();
+    const clock5 = new THREE.Clock();
 
 
 
@@ -446,7 +475,6 @@ function StartAnimation()
     function animate(time){
         box.rotation.y = time / 1000;
         box.rotation.x = time / 1000;
-        //sphere.position.y = 10 * Math.abs(Math.sin(step));
         discoBall.rotation.y = time/1000;
       
         sLightHelper2.update();
@@ -456,6 +484,7 @@ function StartAnimation()
 
         rayCaster.setFromCamera(mousePosition, camera);
         const intersects = rayCaster.intersectObjects(scene.children);
+        //console.log(intersects);
       
         intersects.forEach((intersect) => {
             if(intersect.object.name === "DISCO BALL") {
@@ -495,8 +524,19 @@ function StartAnimation()
         mixer2.update(clock2.getDelta()*1.5);
         mixer3.update(clock3.getDelta());
         stats.update();
-        composer.render();
+
+        
         //renderer.render(scene, camera);
+
+        merchantIdleFrontClock.update(500 * clock4.getDelta());
+        merchantIdleBackClock.update(500 * clock5.getDelta());
+        //merchantSingFrontClock.update(1000 * clock4.getDelta());
+        //merchantSingBackClock.update(1000 * clock5.getDelta());
+        //TODO: Implementar Sing al rayCaster SOLO CUANDO suene Six Feet Thunder
+        //?: Se puede hacer lo mismo con I Am All Of Me???????
+      
+        composer.render();
+
     }
 
     renderer.setAnimationLoop(animate);
@@ -526,6 +566,7 @@ function onMouseDown(event)
         "/music/Read My Lips Time To Party - Everet Almond.mp3",
         "/music/I Am All of Me - Disco Ver - idle.mp3",
         "/music/Six Feet Thunder (5-3) - DannyB.mp3",
+        //TODO: Implementar una forma de ejecutar la sección de Shopkeeper junto a Six Feet Thunder
         "/music/Thrills at Night - Paper Mario The Origami King OST.mp3"
     ];
 
@@ -548,3 +589,41 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) 
+{	
+	// note: texture passed by reference, will be updated by the update function.
+		
+	this.tilesHorizontal = tilesHoriz;
+	this.tilesVertical = tilesVert;
+	// how many images does this spritesheet contain?
+	//  usually equals tilesHoriz * tilesVert, but not necessarily,
+	//  if there at blank tiles at the bottom of the spritesheet. 
+	this.numberOfTiles = numTiles;
+	texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
+	texture.repeat.set( 1 / this.tilesHorizontal, 1 / this.tilesVertical );
+
+	// how long should each image be displayed?
+	this.tileDisplayDuration = tileDispDuration;
+
+	// how long has the current image been displayed?
+	this.currentDisplayTime = 0;
+
+	// which image is currently being displayed?
+	this.currentTile = 0;
+		
+	this.update = function( milliSec )
+	{
+		this.currentDisplayTime += milliSec;
+		while (this.currentDisplayTime > this.tileDisplayDuration)
+		{
+			this.currentDisplayTime -= this.tileDisplayDuration;
+			this.currentTile++;
+			if (this.currentTile == this.numberOfTiles)
+				this.currentTile = 0;
+			var currentColumn = this.currentTile % this.tilesHorizontal;
+			texture.offset.x = currentColumn / this.tilesHorizontal;
+			var currentRow = Math.floor( this.currentTile / this.tilesHorizontal );
+			texture.offset.y = currentRow / this.tilesVertical;
+		}
+	};
+}
