@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { GLTFLoader, RectAreaLightHelper, SkeletonUtils } from 'three/examples/jsm/Addons.js';
+import { EffectComposer, GLTFLoader, RectAreaLightHelper, RenderPass, SkeletonUtils, UnrealBloomPass } from 'three/examples/jsm/Addons.js';
 import deku from '/img/not_deku.jpg'
 import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
 import { element, Raycaster, RectAreaLight } from 'three/webgpu';
@@ -426,6 +426,23 @@ function StartAnimation()
     const clock2 = new THREE.Clock();
     const clock3 = new THREE.Clock();
 
+
+
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    const resolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    const unrealBloomPass = new UnrealBloomPass(
+       resolution,
+       0.17, //strenght
+       1.0, //radius
+       2 //threshold
+    );
+
+
+    composer.addPass(unrealBloomPass);
+    
+
     function animate(time){
         box.rotation.y = time / 1000;
         box.rotation.x = time / 1000;
@@ -478,7 +495,8 @@ function StartAnimation()
         mixer2.update(clock2.getDelta()*1.5);
         mixer3.update(clock3.getDelta());
         stats.update();
-        renderer.render(scene, camera);
+        composer.render();
+        //renderer.render(scene, camera);
     }
 
     renderer.setAnimationLoop(animate);
