@@ -7,27 +7,15 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { AddLights } from './lights';
 import { AddInanimateElements } from './elements';
+import { Group } from '@tweenjs/tween.js';
 
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
 const music = document.getElementById('music1');
 const sing = document.getElementById('sing');
 sing.volume = 0;
-
 const body = document.body;
-const renderer = new THREE.WebGLRenderer();
-const rayCaster = new THREE.Raycaster();
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-const orbit = new OrbitControls(camera, renderer.domElement);
-let indexMusic = 1;
 
-
-
-renderer.shadowMap.enabled = true;
-renderer.setSize(window.innerWidth, window.innerHeight);
-
-document.addEventListener('mousedown', onMouseDown);
 
 acceptButton.addEventListener('click', () => {
 
@@ -46,6 +34,124 @@ acceptButton.addEventListener('click', () => {
     PlayMusic();
 });
 
+
+
+const renderer = new THREE.WebGLRenderer();
+const rayCaster = new THREE.Raycaster();
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const orbit = new OrbitControls(camera, renderer.domElement);
+let indexMusic = 1;
+
+renderer.shadowMap.enabled = true;
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+document.addEventListener('mousedown', onMouseDown);
+document.addEventListener('mousemove', onMouseMove);
+
+let { microphone,
+    Rook,
+    rookTweenNorth,
+    rookTweenSouth,
+    rookTweenEast,
+    rookTweenWest,
+    discoBall,
+    fakeDisco,
+    scenario,
+    tableDJ,
+    hitbox,
+    merchantIdleBack,
+    merchantIdleBackClock,
+    merchantIdleFront,
+    merchantIdleFrontClock,
+    merchantSingBack,
+    merchantSingBackClock,
+    merchantSingFront,
+    merchantSingFrontClock
+
+} = AddInanimateElements(scene);
+
+
+const interactionGroup = [discoBall, tableDJ, hitbox, merchantSingBack, merchantSingFront,
+                           tableDJ.children[0].children.children,
+                           tableDJ.children[0].children.children,
+                            ];
+//interactionGroup.add(discoBall);  
+// interactionGroup.add(tableDJ);
+// interactionGroup.add(hitbox);
+// interactionGroup.add(merchantIdleBack);
+// interactionGroup.add(merchantIdleFront);
+// interactionGroup.add(merchantSingBack);
+// interactionGroup.add(merchantSingFront);
+
+
+//AÑADIR LAS LUCES Y EL GUI
+const { ambientLight, spotlight2, spotlight3/*, sLightHelper2, sLightHelper3*/ } = AddLights(scene, renderer);
+
+
+const originalRay = merchantIdleFront.raycast;
+const originalRaySing = merchantSingFront.raycast;
+    
+
+music.addEventListener('play', () => {
+    if(music.src.split(window.location.origin)[1].split("%20").join(" ") == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
+    {
+        sing.volume = 0.3;
+        sing.load();
+        sing.play();
+
+        merchantIdleFront.visible = false;
+        merchantIdleBack.visible = false;
+        merchantIdleFront.raycast = function() {};
+        merchantIdleBack.raycast = function() {};
+
+        merchantSingFront.visible = true;
+        merchantSingBack.visible = true;
+        merchantSingFront.raycast = originalRaySing;
+        merchantSingBack.raycast = originalRaySing;
+    }
+    else
+    {
+        sing.pause();
+
+        merchantIdleFront.visible = true;
+        merchantIdleBack.visible = true;
+        merchantIdleFront.raycast = originalRay;
+        merchantIdleBack.raycast = originalRay;
+
+
+        merchantSingFront.visible = false;
+        merchantSingBack.visible = false;
+        merchantSingFront.raycast = function() {};
+        merchantSingBack.raycast = function() {};
+
+    }
+});
+
+
+//Post Procesamiento
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+const resolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
+const unrealBloomPass = new UnrealBloomPass(
+   resolution,
+   0.17, //strenght
+   1.0, //radius
+   2 //threshold
+);
+
+composer.addPass(unrealBloomPass);
+
+
+
+music.addEventListener('ended', () => {
+    music.play();
+});
+
+
+
 function StartAnimation()
 {
     document.body.appendChild(renderer.domElement);
@@ -53,37 +159,11 @@ function StartAnimation()
     camera.position.set(0,20,30);
     orbit.update();
 
-    //AÑADIR LAS LUCES Y EL GUI
-    const { ambientLight, spotlight2, spotlight3/*, sLightHelper2, sLightHelper3*/ } = AddLights(scene, renderer);
-    
-    let { microphone,
-          Rook,
-          rookTweenNorth,
-          rookTweenSouth,
-          rookTweenEast,
-          rookTweenWest,
-          discoBall,
-          fakeDisco,
-          scenario,
-          tableDJ,
-          hitbox,
-          merchantIdleBack,
-          merchantIdleBackClock,
-          merchantIdleFront,
-          merchantIdleFrontClock,
-          merchantSingBack,
-          merchantSingBackClock,
-          merchantSingFront,
-          merchantSingFrontClock
-
-        } = AddInanimateElements(scene);
-
     const loader = new GLTFLoader();
-    
     
     // DISCO FLOOR
     let floorMixer = new THREE.AnimationMixer();
-    debugger;
+    //debugger;
     let discoFloor = new THREE.Object3D();
     loader.setPath('/3d_stuff/animated_dance_floor_neon_lights/');
     loader.load('scene.gltf', (gltf) => {
@@ -104,7 +184,7 @@ function StartAnimation()
         const action1 = floorMixer.clipAction(clip1);
 
         action1.play();
-        debugger;
+        //debugger;
     });
     scene.add(discoFloor);
     discoFloor.scale.set(4,1.9,4);
@@ -196,23 +276,7 @@ function StartAnimation()
 
     const clock = new THREE.Clock();
 
-    const composer = new EffectComposer(renderer);
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
-    const resolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    const unrealBloomPass = new UnrealBloomPass(
-       resolution,
-       0.17, //strenght
-       1.0, //radius
-       2 //threshold
-    );
-
-    composer.addPass(unrealBloomPass);
-    
-    const originalRay = merchantIdleFront.raycast;
-    const originalRaySing = merchantSingFront.raycast;
-
-
+   
     function animate(time){
         let delta = clock.getDelta();
         discoBall.rotation.y = time/1000;
@@ -259,33 +323,14 @@ function StartAnimation()
         const sing = document.getElementById('sing');
         if(music == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
         {
-            merchantIdleFront.visible = false;
-            merchantIdleBack.visible = false;
-            merchantIdleFront.raycast = function() {};
-            merchantIdleBack.raycast = function() {};
-
-            merchantSingFront.visible = true;
-            merchantSingBack.visible = true;
-            merchantSingFront.raycast = originalRaySing;
-            merchantSingBack.raycast = originalRaySing;
-
+            
             //merchantIdleBack.
             merchantSingFrontClock.update(1000 * delta);
             merchantSingBackClock.update(1000 * delta);
         }
         else
         {
-            merchantIdleFront.visible = true;
-            merchantIdleBack.visible = true;
-            merchantIdleFront.raycast = originalRay;
-            merchantIdleBack.raycast = originalRay;
-
-
-            merchantSingFront.visible = false;
-            merchantSingBack.visible = false;
-            merchantSingFront.raycast = function() {};
-            merchantSingBack.raycast = function() {};
-
+           
             merchantIdleFrontClock.update(500 * delta);
             merchantIdleBackClock.update(500 * delta);
         }
@@ -328,36 +373,47 @@ function onMouseDown(event)
         const object = intersections[0].object;
         const audio = document.getElementById('music1');
         const audioSing = document.getElementById('sing');
-        console.log(object);
+        //console.log(object);
         if (object.parent?.name === "Cube") {
             console.log(songs);
             console.log(indexMusic);
             audio.src = songs[(indexMusic) % songs.length];
-
-            if(songs[(indexMusic) % songs.length] == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
-            {
-                audioSing.volume = 0.3;
-                audioSing.load();
-                audioSing.play();
-
-            }
-            else{
-                audioSing.pause();
-            }
-
             indexMusic += 1;
             audio.play();
         }
         else if((object.name == "singFront" || object.name == "singBack") && audio.src.split(window.location.origin)[1].split("%20").join(" ") == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
         {
             audioSing.volume = audioSing.volume == 0 ? 0.3 : 0;
+            merchantIdleFront.visible = !merchantIdleFront.visible;
+            merchantIdleBack.visible = !merchantIdleBack.visible;
+            merchantSingFront.visible = !merchantSingFront.visible;
+            merchantSingBack.visible = !merchantSingBack.visible;
         }
+    }
+}
+
+function onMouseMove(event)
+{
+    const rayCaster = new Raycaster();
+    const mousePosition = new THREE.Vector2();
+    mousePosition.x = (event.clientX / window.innerWidth) * 2 - 1,
+    mousePosition.y = -(event.clientY / window.innerHeight) * 2 + 1
+    rayCaster.setFromCamera(mousePosition, camera);
+
+    const intersections = rayCaster.intersectObjects( scene.children, true);
+    // if(intersections[0]?.object?.parent?.name === "Cube") console.log(intersections[0].object)
+    if(intersections.length > 0 && (interactionGroup.find(obj => obj === intersections[0].object) || intersections[0]?.object?.parent?.name === "Cube"))
+    {
+        document.body.style.cursor = "pointer";
+    }
+    else{
+        document.body.style.cursor = "default";
     }
 }
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    
     renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
 });

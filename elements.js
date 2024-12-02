@@ -163,7 +163,7 @@ export function AddInanimateElements(scene){
     merchantSingFront.name = "singFront";
     merchantSingBack.name = "singBack";
 
-    debugger;
+    //debugger;
 
     return {
         microphone,
