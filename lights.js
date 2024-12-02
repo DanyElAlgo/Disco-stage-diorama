@@ -1,9 +1,6 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { EffectComposer, GLTFLoader, RectAreaLightHelper, RenderPass, SkeletonUtils, UnrealBloomPass } from 'three/examples/jsm/Addons.js';
-
-
+import { /*EffectComposer, GLTFLoader,*/RectAreaLightHelper /*,RenderPass, SkeletonUtils, UnrealBloomPass*/ } from 'three/examples/jsm/Addons.js';
 
 export function AddLights(scene, renderer)
 {
@@ -42,13 +39,13 @@ export function AddLights(scene, renderer)
 
     spotlight2.target.position.set(-3, 0, 0);
     spotlight3.target.position.set(2, 4, 6);
-   
+/*
     const sLightHelper2 = new THREE.SpotLightHelper(spotlight2, 0xFF0000);
     const sLightHelper3 = new THREE.SpotLightHelper(spotlight3, 0x00FF00);
    
     scene.add(sLightHelper2);
     scene.add(sLightHelper3);
-
+*/
     spotlight2.castShadow = true;
     spotlight3.castShadow = true;
    
@@ -72,7 +69,6 @@ export function AddLights(scene, renderer)
     const guiSpotLight2 = guiSpotLight.addFolder('spotLight2');
     const guiSpotLight3 = guiSpotLight.addFolder('spotLight3');
     const guiRecAreaLight = guiSpotLight.addFolder('AreaLight');
-
 
     guiSpotLight2.addColor(colorOptions2, 'color').onChange(() => {
         spotlight2.color.setHex(Number(colorOptions2.color.toString().replace('#','0x')))
@@ -114,8 +110,8 @@ export function AddLights(scene, renderer)
     return {
         ambientLight,
         spotlight2,
-        spotlight3,
+        spotlight3/*,
         sLightHelper2,
-        sLightHelper3,
+        sLightHelper3,*/
     };
 }

@@ -1,19 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import { EffectComposer, GLTFLoader, RectAreaLightHelper, RenderPass, SkeletonUtils, UnrealBloomPass } from 'three/examples/jsm/Addons.js';
-import deku from '/img/not_deku.jpg'
-import { randInt, seededRandom } from 'three/src/math/MathUtils.js';
-import { element, Raycaster, RectAreaLight } from 'three/webgpu';
-import { ssrExportAllKey } from 'vite/runtime';
-import { cameraWorldMatrix } from 'three/webgpu';
+import { EffectComposer, GLTFLoader, RenderPass, UnrealBloomPass } from 'three/examples/jsm/Addons.js';
+import { Raycaster } from 'three/webgpu';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import idle_front from '/img/Merchant idle front.png';
-import idle_back from '/img/Merchant idle back.png';
-import sing_front from '/img/Merchant sing front.png';
-import sing_back from '/img/Merchant sing back.png';
 
 import { AddLights } from './lights';
+import { AddInanimateElements } from './elements';
 
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
@@ -53,9 +46,6 @@ acceptButton.addEventListener('click', () => {
     PlayMusic();
 });
 
-let currentSongIndex = 0;
-//TODO: ????????????????????????????????
-
 function StartAnimation()
 {
     document.body.appendChild(renderer.domElement);
@@ -63,57 +53,37 @@ function StartAnimation()
     camera.position.set(0,20,30);
     orbit.update();
 
-    const boxGeometry = new THREE.BoxGeometry();
-    const boxMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
-    const box = new THREE.Mesh(boxGeometry, boxMaterial)
+    //AÑADIR LAS LUCES Y EL GUI
+    const { ambientLight, spotlight2, spotlight3/*, sLightHelper2, sLightHelper3*/ } = AddLights(scene, renderer);
+    
+    let { microphone,
+          Rook,
+          rookTweenNorth,
+          rookTweenSouth,
+          rookTweenEast,
+          rookTweenWest,
+          discoBall,
+          fakeDisco,
+          scenario,
+          tableDJ,
+          hitbox,
+          merchantIdleBack,
+          merchantIdleBackClock,
+          merchantIdleFront,
+          merchantIdleFrontClock,
+          merchantSingBack,
+          merchantSingBackClock,
+          merchantSingFront,
+          merchantSingFrontClock
 
-    const gridHelper = new THREE.GridHelper(30);
-    scene.add(gridHelper);
-  
-    var mixer = new THREE.AnimationMixer();
-    var mixer2 = new THREE.AnimationMixer();
-  
-    const sphereGeo = new THREE.SphereGeometry(4);
-    const sphereMat = new THREE.MeshStandardMaterial({color: 0xffffff});
-    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-    sphere.position.set(-10,10,0);
-    sphere.castShadow = true;
-    //scene.add(sphere);
-    sphere.name = "BALL";
-
-    //ANIADIR LAS LUCES Y EL GUI
-    const { ambientLight, spotlight2, spotlight3, sLightHelper2, sLightHelper3 } = AddLights(scene, renderer);
-  
-    //aplicar una textura de fondo estático
-    const textureLoader = new THREE.TextureLoader();
-    //scene.background = textureLoader.load(idle_front);
+        } = AddInanimateElements(scene);
 
     const loader = new GLTFLoader();
-
-    //MICROFONO
-    let microphone = new THREE.Object3D();
-    loader.setPath('/3d_stuff/classic_microphone/');
-    loader.load('scene.gltf', (gltf) => {
-        gltf.scene.traverse( function ( child ) {
-
-            if ( child.isMesh ) {
-
-                child.castShadow = true;
-                child.receiveShadow = true;
-
-            }
-
-        } );
-        microphone.add(gltf.scene);
-    });
-    microphone.castShadow = true;
-    scene.add(microphone);
-    microphone.position.set(0, 4.3, -8);
-    microphone.scale.set(2.5,2.5,2.5);
-
-
+    
+    
     // DISCO FLOOR
-    let mixer3 = new THREE.AnimationMixer();
+    let floorMixer = new THREE.AnimationMixer();
+    debugger;
     let discoFloor = new THREE.Object3D();
     loader.setPath('/3d_stuff/animated_dance_floor_neon_lights/');
     loader.load('scene.gltf', (gltf) => {
@@ -128,46 +98,22 @@ function StartAnimation()
 
         } );
         discoFloor.add(gltf.scene);
-        mixer3 = new THREE.AnimationMixer(gltf.scene);
+        floorMixer = new THREE.AnimationMixer(gltf.scene);
         const clips = gltf.animations;
         const clip1 = THREE.AnimationClip.findByName(clips, 'Animation');
-        const action1 = mixer3.clipAction(clip1);
+        const action1 = floorMixer.clipAction(clip1);
 
         action1.play();
-        // action1.loop = THREE.LoopOnce;
-     
-        // mixer3.addEventListener('finished', function(e){
-        //     action1.reset();
-        //     action1.play();
-        // });
+        debugger;
     });
     scene.add(discoFloor);
     discoFloor.scale.set(4,1.9,4);
     discoFloor.position.set(0,1.01,0);
     discoFloor.name = "discoFloor";
 
-    //PIEZA DE AJEDREZ
-    const Rook = new THREE.Object3D();
-    loader.setPath('/3d_stuff/classic_chess_rook_3d_model/');
-    loader.load('untitled.glb', (glb) => {
-        glb.scene.traverse( function ( child ) {
-
-            if ( child.isMesh ) {
-
-                child.castShadow = true;
-                child.receiveShadow = true;
-
-            }
-
-        } );
-        Rook.add(glb.scene);
-    });
-    scene.add(Rook);
-    Rook.position.set(-11,0.9,-11);
-    Rook.name = "rook";
-
 
     //MARIO
+    var marioMixer = new THREE.AnimationMixer();
     loader.setPath('/3d_stuff/Mario64/');
     loader.load('untitled.glb', (glb) => {
         glb.scene.traverse( function ( child ) {
@@ -185,15 +131,18 @@ function StartAnimation()
         model.scale.set(300,300,300);
         model.position.setY(1);
         model.position.setX(5);
-        mixer = new THREE.AnimationMixer(model);
+        model.rotateY(-2);
+        marioMixer = new THREE.AnimationMixer(model);
         const clips = glb.animations;
         const clip = THREE.AnimationClip.findByName(clips, 'Armature|mixamo.com|Layer0');
-        const action = mixer.clipAction(clip);
+        const action = marioMixer.clipAction(clip);
         action.play();
 
     });
 
-    //CANTANTE
+
+    //DAMA
+    var womanMixer = new THREE.AnimationMixer();
     loader.setPath('/3d_stuff/Singer/');
     loader.load('untitled.glb', (glb) => {
         glb.scene.traverse( function ( child ) {
@@ -209,127 +158,15 @@ function StartAnimation()
         const model = glb.scene;
         scene.add(model);
         model.scale.set(3,3,3);
-        model.position.set(-4,1,5);
-        mixer2 = new THREE.AnimationMixer(model);
+        model.position.set(-6,1,7);
+        model.rotateY(2.5);
+        womanMixer = new THREE.AnimationMixer(model);
         const clips = glb.animations;
         const clip = THREE.AnimationClip.findByName(clips, 'Armature|mixamo.com|Layer0');
-        const action = mixer2.clipAction(clip);
+        const action = womanMixer.clipAction(clip);
         action.play();
     });
 
-   
-    // DISCO BALL
-    let discoBall = new THREE.Object3D();
-    loader.setPath('/3d_stuff/free_realistic_disco_ball/');
-    loader.load('scene.gltf', (gltf) => {
-        discoBall.add(gltf.scene);
-    });
-    scene.add(discoBall);
-    discoBall.position.set(0,15,0);
-    discoBall.scale.set(0.3,0.3,0.3);
-
-    const fakeDiscoG = new THREE.SphereGeometry(3);
-    const fakeDisco = new THREE.Mesh(fakeDiscoG, new THREE.MeshPhongMaterial({visible: false, envMap: textureLoader.load(deku), roughness: 0, metalness: 1, shininess: 100}));
-    scene.add(fakeDisco);
-    fakeDisco.position.set(0,15,0);
-    fakeDisco.scale.set(.92, .92, .92);
-    fakeDisco.name = "DISCO BALL";
-
-    //ESCENARIO
-    let scenario = new THREE.Object3D();
-    loader.setPath('/3d_stuff/nightclub/');
-    loader.load('scene.gltf', (gltf) => {
-        gltf.scene.traverse( function ( child ) {
-            if ( child.isMesh )
-                {
-                //child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        });
-        scenario.add(gltf.scene);
-    });
-    scene.add(scenario);
-    scenario.scale.set(4, 4, 4);
-    scenario.position.set(0,0.1,0);
-
-    
-    //mesa de dj
-    let tableDJ = new THREE.Object3D();
-    loader.setPath('/3d_stuff/dj_table/');
-    loader.load('scene.gltf', (gltf) => {
-    gltf.scene.traverse( function ( child ) {
-        if ( child.isMesh )
-            {
-            child.castShadow = true;
-            child.receiveShadow = true;
-        }
-    });
-        tableDJ.add(gltf.scene);
-    });
-    scene.add(tableDJ);
-    tableDJ.position.set(0,7,35);
-    tableDJ.scale.set(0.01, 0.01, 0.01);
-    tableDJ.name = "DJ";
-
-    const hitbox = new THREE.Mesh(
-        new THREE.BoxGeometry(5, 5, 5), // Tamaño de la hitbox
-        new THREE.MeshBasicMaterial({ visible: false }) // Material invisible
-    );
-    tableDJ.add(hitbox); // Agregar la hitbox al objeto principal
-    hitbox.name = 'tableDJHitbox';
-    
-    var merchantIdleFrontTexture = textureLoader.load(idle_front);
-    merchantIdleFrontTexture.magFilter = THREE.NearestFilter;
-    merchantIdleFrontTexture.minFilter = THREE.NearestFilter;
-	let merchantIdleFrontClock = new TextureAnimator( merchantIdleFrontTexture, 4, 1, 4, 75 ); // texture, #horiz, #vert, #total, duration.
-	var merchantIdleFrontMaterial = new THREE.MeshBasicMaterial( { map: merchantIdleFrontTexture, side:THREE.FrontSide, transparent: true } );
-	var merchantIdleFrontGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
-	var merchantIdleFront = new THREE.Mesh(merchantIdleFrontGeometry, merchantIdleFrontMaterial);
-	merchantIdleFront.position.set(0, 3.5, -10);
-    merchantIdleFront.scale.set(.1,.1,.1);
-	scene.add(merchantIdleFront);
-
-    var merchantIdleBackTexture = textureLoader.load(idle_back);
-    merchantIdleBackTexture.magFilter = THREE.NearestFilter;
-    merchantIdleBackTexture.minFilter = THREE.NearestFilter;
-	let merchantIdleBackClock = new TextureAnimator( merchantIdleBackTexture, 4, 1, 4, 75 ); // texture, #horiz, #vert, #total, duration.
-	var merchantIdleBackMaterial = new THREE.MeshBasicMaterial( { map: merchantIdleBackTexture, side:THREE.BackSide, transparent: true } );
-	var merchantIdleBackGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
-	var merchantIdleBack = new THREE.Mesh(merchantIdleBackGeometry, merchantIdleBackMaterial);
-	merchantIdleBack.position.set(0, 3.5, -10);
-    merchantIdleBack.scale.set(-0.1,.1,.1);
-	scene.add(merchantIdleBack);
-
-    merchantIdleFront.name = "notSingFront";
-    merchantIdleBack.name = "notSingBack";
-    
-    
-    //TODO: Implementar esto para ser dinámico
-
-    var merchantSingFrontTexture = textureLoader.load(sing_front);
-    merchantSingFrontTexture.magFilter = THREE.NearestFilter;
-    merchantSingFrontTexture.minFilter = THREE.NearestFilter;
-	let merchantSingFrontClock = new TextureAnimator( merchantSingFrontTexture, 8, 1, 8, 75 ); // texture, #horiz, #vert, #total, duration.
-	var merchantSingFrontMaterial = new THREE.MeshBasicMaterial( { map: merchantSingFrontTexture, side:THREE.FrontSide, transparent: true } );
-	var merchantSingFrontGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
-	var merchantSingFront = new THREE.Mesh(merchantSingFrontGeometry, merchantSingFrontMaterial);
-	merchantSingFront.position.set(0, 3.5, -10);
-    merchantSingFront.scale.set(.1,.1,.1);
-	scene.add(merchantSingFront);
-
-    var merchantSingBackTexture = textureLoader.load(sing_back);
-    merchantSingBackTexture.magFilter = THREE.NearestFilter;
-    merchantSingBackTexture.minFilter = THREE.NearestFilter;
-	let merchantSingBackClock = new TextureAnimator( merchantSingBackTexture, 8, 1, 8, 75 ); // texture, #horiz, #vert, #total, duration.
-	var merchantSingBackMaterial = new THREE.MeshBasicMaterial( { map: merchantSingBackTexture, side:THREE.BackSide, transparent: true } );
-	var merchantSingBackGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
-	var merchantSingBack = new THREE.Mesh(merchantSingBackGeometry, merchantSingBackMaterial);
-	merchantSingBack.position.set(0, 3.5, -10);
-    merchantSingBack.scale.set(-0.1,.1,.1);
-	scene.add(merchantSingBack);
-
-    merchantSingFront.name = "singFront";
-    merchantSingBack.name = "singBack";
 
     const guiVolume = new dat.GUI();
     const stats = new Stats();
@@ -357,14 +194,7 @@ function StartAnimation()
     let transitionTime = 0;
     const transitionDuration = 0.2; 
 
-    let micMoveRight = true;
-    let micMoveForward = true;
     const clock = new THREE.Clock();
-    const clock2 = new THREE.Clock();
-    const clock3 = new THREE.Clock();
-    const clock4 = new THREE.Clock();
-    const clock5 = new THREE.Clock();
-
 
     const composer = new EffectComposer(renderer);
     const renderPass = new RenderPass(scene, camera);
@@ -377,21 +207,15 @@ function StartAnimation()
        2 //threshold
     );
 
-
     composer.addPass(unrealBloomPass);
     
     const originalRay = merchantIdleFront.raycast;
     const originalRaySing = merchantSingFront.raycast;
 
+
     function animate(time){
-        box.rotation.y = time / 1000;
-        box.rotation.x = time / 1000;
+        let delta = clock.getDelta();
         discoBall.rotation.y = time/1000;
-      
-        sLightHelper2.update();
-        sLightHelper3.update();
-        // sLightHelper4.update();
-        // sLightHelper5.update();
 
         rayCaster.setFromCamera(mousePosition, camera);
         const intersects = rayCaster.intersectObjects(scene.children);
@@ -400,14 +224,6 @@ function StartAnimation()
         intersects.forEach((intersect) => {
             if(intersect.object.name === "DISCO BALL") {
                 discoBall.rotation.y = time/500;
-            }
-
-            if(intersect.object.name === 'memebox') {
-                intersect.object.rotation.x = time/1000;
-                intersect.object.rotation.y = time/1000;
-            }
-            if(intersect.object.id === box.id){
-                intersect.object.material.color.set(0xFF0000)
             }
         });
 
@@ -428,14 +244,17 @@ function StartAnimation()
             nextColorIndex = (nextColorIndex + 1) % colors1.length;  // Ciclar entre los colores
             transitionTime = 0;
         }
-        Rook.position.setZ(randInt(0,11)*2 - 11);
 
-      
-        mixer.update(clock.getDelta()*1.5);
-        mixer2.update(clock2.getDelta()*1.5);
-        mixer3.update(clock3.getDelta());
         stats.update();
-        
+        marioMixer.update(delta*1.5);
+        womanMixer.update(delta*1.5);
+        floorMixer.update(delta);
+        rookTweenSouth.update(time);
+        rookTweenEast.update(time);
+        rookTweenNorth.update(time);
+        rookTweenWest.update(time);
+        stats.update(delta);
+
         const music = document.getElementById('music1').src.split(window.location.origin)[1].split("%20").join(" ");
         const sing = document.getElementById('sing');
         if(music == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
@@ -451,8 +270,8 @@ function StartAnimation()
             merchantSingBack.raycast = originalRaySing;
 
             //merchantIdleBack.
-            merchantSingFrontClock.update(1000 * clock4.getDelta());
-            merchantSingBackClock.update(1000 * clock5.getDelta());
+            merchantSingFrontClock.update(1000 * delta);
+            merchantSingBackClock.update(1000 * delta);
         }
         else
         {
@@ -467,22 +286,12 @@ function StartAnimation()
             merchantSingFront.raycast = function() {};
             merchantSingBack.raycast = function() {};
 
-            merchantIdleFrontClock.update(500 * clock4.getDelta());
-            merchantIdleBackClock.update(500 * clock5.getDelta());
+            merchantIdleFrontClock.update(500 * delta);
+            merchantIdleBackClock.update(500 * delta);
         }
         
-
         //renderer.render(scene, camera);
-
-
-
-       
-        
-        //TODO: Implementar Sing al rayCaster SOLO CUANDO suene Six Feet Thunder
-        //?: Se puede hacer lo mismo con I Am All Of Me???????
-      
         composer.render();
-
     }
 
     renderer.setAnimationLoop(animate);
@@ -512,8 +321,7 @@ function onMouseDown(event)
         "/music/Read My Lips Time To Party - Everet Almond.mp3",
         "/music/I Am All of Me - Disco Ver - idle.mp3",
         "/music/Six Feet Thunder (5-3) - DannyB.mp3",
-        //TODO: Implementar una forma de ejecutar la sección de Shopkeeper junto a Six Feet Thunder
-        "/music/Thrills at Night - Paper Mario The Origami King OST.mp3"
+       "/music/Thrills at Night - Paper Mario The Origami King OST.mp3"
     ];
 
     if (intersections.length > 0) {
@@ -553,42 +361,3 @@ window.addEventListener('resize', () => {
     
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) 
-{	
-	// note: texture passed by reference, will be updated by the update function.
-		
-	this.tilesHorizontal = tilesHoriz;
-	this.tilesVertical = tilesVert;
-	// how many images does this spritesheet contain?
-	//  usually equals tilesHoriz * tilesVert, but not necessarily,
-	//  if there at blank tiles at the bottom of the spritesheet. 
-	this.numberOfTiles = numTiles;
-	texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
-	texture.repeat.set( 1 / this.tilesHorizontal, 1 / this.tilesVertical );
-
-	// how long should each image be displayed?
-	this.tileDisplayDuration = tileDispDuration;
-
-	// how long has the current image been displayed?
-	this.currentDisplayTime = 0;
-
-	// which image is currently being displayed?
-	this.currentTile = 0;
-		
-	this.update = function( milliSec )
-	{
-		this.currentDisplayTime += milliSec;
-		while (this.currentDisplayTime > this.tileDisplayDuration)
-		{
-			this.currentDisplayTime -= this.tileDisplayDuration;
-			this.currentTile++;
-			if (this.currentTile == this.numberOfTiles)
-				this.currentTile = 0;
-			var currentColumn = this.currentTile % this.tilesHorizontal;
-			texture.offset.x = currentColumn / this.tilesHorizontal;
-			var currentRow = Math.floor( this.currentTile / this.tilesHorizontal );
-			texture.offset.y = currentRow / this.tilesVertical;
-		}
-	};
-}
