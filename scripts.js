@@ -10,14 +10,16 @@ import { cameraWorldMatrix } from 'three/webgpu';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import idle_front from '/img/Merchant idle front.png';
 import idle_back from '/img/Merchant idle back.png';
-//import sing_front from '/img/Merchant sing front.png';
-//import sing_back from '/img/Merchant sing back.png';
+import sing_front from '/img/Merchant sing front.png';
+import sing_back from '/img/Merchant sing back.png';
 
 import { AddLights } from './lights';
 
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
 const music = document.getElementById('music1');
+const sing = document.getElementById('sing');
+sing.volume = 0;
 
 const body = document.body;
 const renderer = new THREE.WebGLRenderer();
@@ -275,7 +277,7 @@ function StartAnimation()
     );
     tableDJ.add(hitbox); // Agregar la hitbox al objeto principal
     hitbox.name = 'tableDJHitbox';
-
+    
     var merchantIdleFrontTexture = textureLoader.load(idle_front);
     merchantIdleFrontTexture.magFilter = THREE.NearestFilter;
     merchantIdleFrontTexture.minFilter = THREE.NearestFilter;
@@ -298,8 +300,12 @@ function StartAnimation()
     merchantIdleBack.scale.set(-0.1,.1,.1);
 	scene.add(merchantIdleBack);
 
+    merchantIdleFront.name = "notSingFront";
+    merchantIdleBack.name = "notSingBack";
+    
+    
     //TODO: Implementar esto para ser dinámico
-/*
+
     var merchantSingFrontTexture = textureLoader.load(sing_front);
     merchantSingFrontTexture.magFilter = THREE.NearestFilter;
     merchantSingFrontTexture.minFilter = THREE.NearestFilter;
@@ -321,9 +327,10 @@ function StartAnimation()
 	merchantSingBack.position.set(0, 3.5, -10);
     merchantSingBack.scale.set(-0.1,.1,.1);
 	scene.add(merchantSingBack);
-*/
 
-    
+    merchantSingFront.name = "singFront";
+    merchantSingBack.name = "singBack";
+
     const guiVolume = new dat.GUI();
     const stats = new Stats();
     document.body.appendChild(stats.dom);
@@ -373,6 +380,8 @@ function StartAnimation()
 
     composer.addPass(unrealBloomPass);
     
+    const originalRay = merchantIdleFront.raycast;
+    const originalRaySing = merchantSingFront.raycast;
 
     function animate(time){
         box.rotation.y = time / 1000;
@@ -426,14 +435,49 @@ function StartAnimation()
         mixer2.update(clock2.getDelta()*1.5);
         mixer3.update(clock3.getDelta());
         stats.update();
-
         
+        const music = document.getElementById('music1').src.split(window.location.origin)[1].split("%20").join(" ");
+        const sing = document.getElementById('sing');
+        if(music == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
+        {
+            merchantIdleFront.visible = false;
+            merchantIdleBack.visible = false;
+            merchantIdleFront.raycast = function() {};
+            merchantIdleBack.raycast = function() {};
+
+            merchantSingFront.visible = true;
+            merchantSingBack.visible = true;
+            merchantSingFront.raycast = originalRaySing;
+            merchantSingBack.raycast = originalRaySing;
+
+            //merchantIdleBack.
+            merchantSingFrontClock.update(1000 * clock4.getDelta());
+            merchantSingBackClock.update(1000 * clock5.getDelta());
+        }
+        else
+        {
+            merchantIdleFront.visible = true;
+            merchantIdleBack.visible = true;
+            merchantIdleFront.raycast = originalRay;
+            merchantIdleBack.raycast = originalRay;
+
+
+            merchantSingFront.visible = false;
+            merchantSingBack.visible = false;
+            merchantSingFront.raycast = function() {};
+            merchantSingBack.raycast = function() {};
+
+            merchantIdleFrontClock.update(500 * clock4.getDelta());
+            merchantIdleBackClock.update(500 * clock5.getDelta());
+        }
+        
+
         //renderer.render(scene, camera);
 
-        merchantIdleFrontClock.update(500 * clock4.getDelta());
-        merchantIdleBackClock.update(500 * clock5.getDelta());
-        //merchantSingFrontClock.update(1000 * clock4.getDelta());
-        //merchantSingBackClock.update(1000 * clock5.getDelta());
+
+
+       
+        
         //TODO: Implementar Sing al rayCaster SOLO CUANDO suene Six Feet Thunder
         //?: Se puede hacer lo mismo con I Am All Of Me???????
       
@@ -474,13 +518,31 @@ function onMouseDown(event)
 
     if (intersections.length > 0) {
         const object = intersections[0].object;
+        const audio = document.getElementById('music1');
+        const audioSing = document.getElementById('sing');
+        console.log(object);
         if (object.parent?.name === "Cube") {
-            const audio = document.getElementById('music1');
             console.log(songs);
             console.log(indexMusic);
             audio.src = songs[(indexMusic) % songs.length];
+
+            if(songs[(indexMusic) % songs.length] == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
+            {
+                audioSing.volume = 0.3;
+                audioSing.load();
+                audioSing.play();
+
+            }
+            else{
+                audioSing.pause();
+            }
+
             indexMusic += 1;
             audio.play();
+        }
+        else if((object.name == "singFront" || object.name == "singBack") && audio.src.split(window.location.origin)[1].split("%20").join(" ") == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
+        {
+            audioSing.volume = audioSing.volume == 0 ? 0.3 : 0;
         }
     }
 }
@@ -488,6 +550,7 @@ function onMouseDown(event)
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
