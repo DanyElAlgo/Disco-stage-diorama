@@ -6,7 +6,7 @@ import { Raycaster } from 'three/webgpu';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { AddLights } from './lights';
-import { AddInanimateElements } from './elements';
+import { AddInanimateElements, AddDiscoBallWithPhysics } from './elements';
 import { Group } from '@tweenjs/tween.js';
 
 const acceptButton = document.getElementById('acceptButton');
@@ -34,8 +34,6 @@ acceptButton.addEventListener('click', () => {
     PlayMusic();
 });
 
-
-
 const renderer = new THREE.WebGLRenderer();
 const rayCaster = new THREE.Raycaster();
 const scene = new THREE.Scene();
@@ -55,8 +53,8 @@ let { microphone,
     rookTweenSouth,
     rookTweenEast,
     rookTweenWest,
-    discoBall,
-    fakeDisco,
+    //discoBall,
+    //fakeDisco,
     scenario,
     tableDJ,
     hitbox,
@@ -72,7 +70,7 @@ let { microphone,
 } = AddInanimateElements(scene);
 
 
-const interactionGroup = [discoBall, tableDJ, hitbox, merchantSingBack, merchantSingFront,
+const interactionGroup = [ tableDJ, hitbox, merchantSingBack, merchantSingFront,
                            tableDJ.children[0].children.children,
                            tableDJ.children[0].children.children,
                             ];
@@ -276,20 +274,24 @@ function StartAnimation()
 
     const clock = new THREE.Clock();
 
+    const { updateDiscoBall, renderScene } = AddDiscoBallWithPhysics(scene, renderer, camera);
+
    
     function animate(time){
         let delta = clock.getDelta();
-        discoBall.rotation.y = time/1000;
+        //discoBall.rotation.y = time/1000;
+        updateDiscoBall(delta);
+        renderScene();
 
         rayCaster.setFromCamera(mousePosition, camera);
         const intersects = rayCaster.intersectObjects(scene.children);
         //console.log(intersects);
       
-        intersects.forEach((intersect) => {
-            if(intersect.object.name === "DISCO BALL") {
-                discoBall.rotation.y = time/500;
-            }
-        });
+        //intersects.forEach((intersect) => {
+        //    if(intersect.object.name === "DISCO BALL") {
+        //        discoBall.rotation.y = time/500;
+        //    }
+        //});
 
         transitionTime += 0.01;
         // Interpolación del color

@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/Addons.js';
 import { AddTweening } from './rookTween';
-
+import * as CANNON from 'cannon';
+import { EffectComposer, RenderPass, UnrealBloomPass } from 'three/examples/jsm/Addons.js';
 
 import idle_front from '/img/Merchant idle front.png';
 import idle_back from '/img/Merchant idle back.png';
@@ -51,6 +52,7 @@ export function AddInanimateElements(scene){
 
    
     // DISCO BALL
+    /*
     let discoBall = new THREE.Object3D();
     loader.setPath('/3d_stuff/free_realistic_disco_ball/');
     loader.load('scene.gltf', (gltf) => {
@@ -66,7 +68,7 @@ export function AddInanimateElements(scene){
     fakeDisco.position.set(0,15,0);
     fakeDisco.scale.set(.92, .92, .92);
     fakeDisco.name = "DISCO BALL";
-
+    */
 
     //ESCENARIO
     let scenario = new THREE.Object3D();
@@ -172,8 +174,8 @@ export function AddInanimateElements(scene){
         rookTweenSouth,
         rookTweenEast,
         rookTweenWest,
-        discoBall,
-        fakeDisco,
+        //discoBall,
+        //fakeDisco,
         scenario,
         tableDJ,
         hitbox,
@@ -225,4 +227,191 @@ function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDurat
 			texture.offset.y = currentRow / this.tilesVertical;
 		}
 	};
+}
+
+export function AddDiscoBallWithPhysics(scene, renderer, camera) {
+    // Inicializar mundo de físicas
+    const world = new CANNON.World();
+    world.gravity.set(0, -9.82, 0); // Gravedad hacia abajo
+
+    const boxDimensions = {
+        width: 30,       // Ancho de la caja
+        height: 30,      // Altura de la caja
+        depth: 30,       // Profundidad de la caja
+        thickness: 0.5,  // Grosor de las paredes
+    };
+    
+    // Crear la caja de contención
+    createBoundingBox(world, boxDimensions);
+
+    function createBoundingBox(world, dimensions) {
+        const { width, height, depth, thickness } = dimensions;
+    
+        // Material de las paredes para evitar fricción excesiva
+        const wallMaterial = new CANNON.Material('wallMaterial');
+        const contactMaterial = new CANNON.ContactMaterial(wallMaterial, wallMaterial, {
+            friction: 0.3,
+            restitution: 0.5,
+        });
+        world.addContactMaterial(contactMaterial);
+    
+        const walls = [];
+    
+        // Paredes laterales
+        const wallShape = new CANNON.Box(new CANNON.Vec3(thickness / 2, height / 2, depth / 2));
+    
+        const leftWallBody = new CANNON.Body({
+            mass: 0,
+            material: wallMaterial,
+            position: new CANNON.Vec3(-width / 2 - thickness / 2, height / 2, 0),
+        });
+        leftWallBody.addShape(wallShape);
+        walls.push(leftWallBody);
+    
+        const rightWallBody = new CANNON.Body({
+            mass: 0,
+            material: wallMaterial,
+            position: new CANNON.Vec3(width / 2 + thickness / 2, height / 2, 0),
+        });
+        rightWallBody.addShape(wallShape);
+        walls.push(rightWallBody);
+    
+        // Pared frontal y trasera
+        const frontBackWallShape = new CANNON.Box(new CANNON.Vec3(width / 2, height / 2, thickness / 2));
+    
+        const frontWallBody = new CANNON.Body({
+            mass: 0,
+            material: wallMaterial,
+            position: new CANNON.Vec3(0, height / 2, depth / 2 + thickness / 2),
+        });
+        frontWallBody.addShape(frontBackWallShape);
+        walls.push(frontWallBody);
+    
+        const backWallBody = new CANNON.Body({
+            mass: 0,
+            material: wallMaterial,
+            position: new CANNON.Vec3(0, height / 2, -depth / 2 - thickness / 2),
+        });
+        backWallBody.addShape(frontBackWallShape);
+        walls.push(backWallBody);
+    
+        // Agregar paredes al mundo
+        walls.forEach((wall) => world.addBody(wall));
+    
+        return walls;
+    }
+
+    // Crear un cuerpo físico para el suelo
+    const groundBody = new CANNON.Body({
+        mass: 0, // Suelo estático
+        shape: new CANNON.Plane(),
+    });
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0); // Rotar para alinearlo al plano horizontal
+    world.addBody(groundBody);
+
+    // Cargar modelo GLTF de la disco ball
+    const loader = new GLTFLoader();
+    const discoBall = new THREE.Object3D();
+    loader.setPath('/3d_stuff/free_realistic_disco_ball/');
+    loader.load('scene.gltf', (gltf) => {
+        discoBall.add(gltf.scene);
+    });
+
+    // Ajustar propiedades de la disco ball
+    scene.add(discoBall);
+    discoBall.position.set(0, 18, 0);
+    discoBall.scale.set(0.3, 0.3, 0.3);
+
+    // Crear cuerpo físico para la disco ball
+    const discoBallBody = new CANNON.Body({
+        mass: 5,
+        shape: new CANNON.Sphere(3),
+        position: new CANNON.Vec3(0, 18, 0),
+    });
+    world.addBody(discoBallBody);
+
+    // Variables para controlar estado de la disco ball
+    let isFalling = false;
+
+    // Rotación inicial de la disco ball
+    const rotationSpeed = 0.02;
+
+    // Detectar clic en la disco ball usando un raycaster
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    renderer.domElement.addEventListener('pointerdown', (event) => {
+        // Convertir coordenadas del clic a espacio normalizado
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        // Calcular intersecciones
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(discoBall, true);
+
+        if (intersects.length > 0 && !isFalling) {
+            isFalling = true; // Cambiar estado para iniciar caída
+        } else {
+            // Golpear la disco ball
+            const hitPoint = intersects[0].point;
+            applyForceToDiscoBall(hitPoint);
+        }
+    });
+
+    function applyForceToDiscoBall(hitPoint) {
+        // Convertir el punto de impacto a un vector relativo al centro de la disco ball
+        const forceDirection = new CANNON.Vec3(
+            hitPoint.x - discoBallBody.position.x,
+            hitPoint.y - discoBallBody.position.y,
+            hitPoint.z - discoBallBody.position.z
+        );
+    
+        // Normalizar la dirección (longitud 1) para aplicar una fuerza proporcional
+        forceDirection.normalize();
+    
+        // Aplicar fuerza escalada en la dirección calculada
+        const forceMagnitude = 1000; // Ajusta la intensidad del "golpe"
+        const force = new CANNON.Vec3(
+            -forceDirection.x * forceMagnitude,
+            -forceDirection.y * forceMagnitude,
+            -forceDirection.z * forceMagnitude
+        );
+    
+        // Aplicar la fuerza en el punto de impacto
+        discoBallBody.applyForce(force, discoBallBody.position);
+    }
+
+    // Configurar efecto de postprocesamiento Bloom
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        1.5,  // Intensidad
+        0.4,  // Radio
+        0.85  // Umbral
+    );
+    composer.addPass(bloomPass);
+
+    // Lógica de actualización de la disco ball
+    function updateDiscoBall(deltaTime) {
+        if (!isFalling) {
+            // Rotación mientras está suspendida
+            discoBall.rotation.y += rotationSpeed;
+        } else {
+            // Actualizar simulación física
+            world.step(1 / 60, deltaTime, 3); // Delta fijo para estabilidad
+            discoBall.position.copy(discoBallBody.position);
+            discoBall.quaternion.copy(discoBallBody.quaternion);
+        }
+    }
+
+    // Renderizado con Bloom
+    function renderScene() {
+        composer.render();
+    }
+
+    // Retornar funciones necesarias
+    return { updateDiscoBall, renderScene };
 }
