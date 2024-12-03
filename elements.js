@@ -50,25 +50,6 @@ export function AddInanimateElements(scene){
     const { rookTweenNorth, rookTweenSouth, rookTweenEast, rookTweenWest } = AddTweening(Rook);
     rookTweenSouth.start();
 
-   
-    // DISCO BALL
-    /*
-    let discoBall = new THREE.Object3D();
-    loader.setPath('/3d_stuff/free_realistic_disco_ball/');
-    loader.load('scene.gltf', (gltf) => {
-        discoBall.add(gltf.scene);
-    });
-    scene.add(discoBall);
-    discoBall.position.set(0,15,0);
-    discoBall.scale.set(0.3,0.3,0.3);
-
-    const fakeDiscoG = new THREE.SphereGeometry(3);
-    const fakeDisco = new THREE.Mesh(fakeDiscoG, new THREE.MeshPhongMaterial({visible: false}));
-    scene.add(fakeDisco);
-    fakeDisco.position.set(0,15,0);
-    fakeDisco.scale.set(.92, .92, .92);
-    fakeDisco.name = "DISCO BALL";
-    */
 
     //ESCENARIO
     let scenario = new THREE.Object3D();
@@ -165,7 +146,6 @@ export function AddInanimateElements(scene){
     merchantSingFront.name = "singFront";
     merchantSingBack.name = "singBack";
 
-    //debugger;
 
     return {
         microphone,
@@ -174,8 +154,6 @@ export function AddInanimateElements(scene){
         rookTweenSouth,
         rookTweenEast,
         rookTweenWest,
-        //discoBall,
-        //fakeDisco,
         scenario,
         tableDJ,
         hitbox,

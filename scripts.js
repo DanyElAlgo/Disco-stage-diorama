@@ -7,7 +7,6 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { AddLights } from './lights';
 import { AddInanimateElements, AddDiscoBallWithPhysics } from './elements';
-import { Group } from '@tweenjs/tween.js';
 
 const acceptButton = document.getElementById('acceptButton');
 const modalElement = document.getElementById('modalElement');
@@ -35,7 +34,6 @@ acceptButton.addEventListener('click', () => {
 });
 
 const renderer = new THREE.WebGLRenderer();
-const rayCaster = new THREE.Raycaster();
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 const orbit = new OrbitControls(camera, renderer.domElement);
@@ -53,8 +51,6 @@ let { microphone,
     rookTweenSouth,
     rookTweenEast,
     rookTweenWest,
-    //discoBall,
-    //fakeDisco,
     scenario,
     tableDJ,
     hitbox,
@@ -68,19 +64,6 @@ let { microphone,
     merchantSingFrontClock
 
 } = AddInanimateElements(scene);
-
-
-const interactionGroup = [ tableDJ, hitbox, merchantSingBack, merchantSingFront,
-                           tableDJ.children[0].children.children,
-                           tableDJ.children[0].children.children,
-                            ];
-//interactionGroup.add(discoBall);  
-// interactionGroup.add(tableDJ);
-// interactionGroup.add(hitbox);
-// interactionGroup.add(merchantIdleBack);
-// interactionGroup.add(merchantIdleFront);
-// interactionGroup.add(merchantSingBack);
-// interactionGroup.add(merchantSingFront);
 
 
 //AÑADIR LAS LUCES Y EL GUI
@@ -161,7 +144,6 @@ function StartAnimation()
     
     // DISCO FLOOR
     let floorMixer = new THREE.AnimationMixer();
-    //debugger;
     let discoFloor = new THREE.Object3D();
     loader.setPath('/3d_stuff/animated_dance_floor_neon_lights/');
     loader.load('scene.gltf', (gltf) => {
@@ -182,7 +164,7 @@ function StartAnimation()
         const action1 = floorMixer.clipAction(clip1);
 
         action1.play();
-        //debugger;
+        
     });
     scene.add(discoFloor);
     discoFloor.scale.set(4,1.9,4);
@@ -253,8 +235,6 @@ function StartAnimation()
     const audio = document.getElementById('music1');
     guiVolume.add(audio, 'volume', 0, 1);
 
-    let step = 0;
-
     const mousePosition = new THREE.Vector2();
     const rayCaster = new THREE.Raycaster();
 
@@ -276,22 +256,21 @@ function StartAnimation()
 
     const { updateDiscoBall, renderScene } = AddDiscoBallWithPhysics(scene, renderer, camera);
 
+    const interactionGroup = [ tableDJ, hitbox, merchantSingBack, merchantSingFront,
+        tableDJ.children[0].children.children,
+        tableDJ.children[0].children.children
+         ];
+         //añadir la esfera de cristal
+
    
     function animate(time){
         let delta = clock.getDelta();
-        //discoBall.rotation.y = time/1000;
         updateDiscoBall(delta);
         renderScene();
 
         rayCaster.setFromCamera(mousePosition, camera);
         const intersects = rayCaster.intersectObjects(scene.children);
         //console.log(intersects);
-      
-        //intersects.forEach((intersect) => {
-        //    if(intersect.object.name === "DISCO BALL") {
-        //        discoBall.rotation.y = time/500;
-        //    }
-        //});
 
         transitionTime += 0.01;
         // Interpolación del color
@@ -325,14 +304,11 @@ function StartAnimation()
         const sing = document.getElementById('sing');
         if(music == "/music/Six Feet Thunder (5-3) - DannyB.mp3")
         {
-            
-            //merchantIdleBack.
             merchantSingFrontClock.update(1000 * delta);
             merchantSingBackClock.update(1000 * delta);
         }
         else
-        {
-           
+        {  
             merchantIdleFrontClock.update(500 * delta);
             merchantIdleBackClock.update(500 * delta);
         }
@@ -403,7 +379,6 @@ function onMouseMove(event)
     rayCaster.setFromCamera(mousePosition, camera);
 
     const intersections = rayCaster.intersectObjects( scene.children, true);
-    // if(intersections[0]?.object?.parent?.name === "Cube") console.log(intersections[0].object)
     if(intersections.length > 0 && (interactionGroup.find(obj => obj === intersections[0].object) || intersections[0]?.object?.parent?.name === "Cube"))
     {
         document.body.style.cursor = "pointer";
